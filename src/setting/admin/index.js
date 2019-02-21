@@ -4,7 +4,8 @@ import NProgress from 'nprogress'
 import './index.css'
 import HttpUtils from '../../http/HttpUtils';
 import API from '../../api';
-export default class ProductInfoView extends Component{
+const Option = Select.Option;
+class AdminInfoView extends Component{
     componentWillMount(){
         NProgress.start();
     }
@@ -21,7 +22,13 @@ export default class ProductInfoView extends Component{
           page:1,
           pageSize:50,
           userData:[],
-          loading:false
+          loading:false,
+          adminModalVisible:false,
+          adminModalTitle:'',
+          fbDataAll:[],
+          domainDataAll:[],
+          isInit:true,
+          isAdd:true,
       }
     }
     /**
@@ -48,7 +55,12 @@ export default class ProductInfoView extends Component{
         HttpUtils.post(API.USER_FIND,formData)
         .then((result)=>{
             if(result.status === 200){
-                this.setState({userData:result.data.content,total:result.data.count})
+                this.setState({userData:result.data.content,total:result.data.count});
+                if(this.state.isInit){
+                    this.findAllFbId();
+                    this.findAllDomain();
+                }
+                this.setState({isInit:false})
             }else{
                 message.error('操作异常',3);
             }
@@ -57,6 +69,112 @@ export default class ProductInfoView extends Component{
             message.error('操作异常',3);
             this.setState({loading:false})
         })
+    }
+    /**
+     * 查询FBid
+     */
+    findAllFbId=()=>{
+        HttpUtils.get(API.FB_FIND_ALL)
+        .then((result)=>{
+            if(result.status === 200){
+                var fbs=[];
+                for (let i = 0; i < result.data.length; i++) {
+                    fbs.push(<Option key={result.data[i].fb_name}  value={result.data[i].id}>{result.data[i].fb_name}</Option>);
+                }
+                this.setState({fbDataAll:fbs})
+            }else{
+                message.error('操作异常',3);
+            }
+        }).catch((error)=>{
+            message.error('操作异常',3);
+        })
+    }
+    /**
+     * 查询域名
+     */
+    findAllDomain=()=>{
+        HttpUtils.get(API.DOMAIN_FIND_ALL)
+        .then((result)=>{
+            var demains=[];
+            for (let i = 0; i < result.data.length; i++) {
+                demains.push(<Option key={result.data[i].domain_name}  value={result.data[i].id}>{result.data[i].domain_name}</Option>);
+            }
+            this.setState({domainDataAll:demains})
+        }).catch((error)=>{
+            message.error('操作异常',3);
+        })
+    }
+    /**
+     * 表单提交
+     */
+    handleSubmit=(e)=>{
+        e.preventDefault();
+        this.props.form.validateFields((err, values) => {
+            if (!err) {
+                var url = this.state.isAdd?API.USER_ADD:API.USER_EDIT;
+              HttpUtils.postJson(url,values)
+              .then((result)=>{
+                if(result.status === 200){
+                    message.success('操作成功',3);
+                    this.setState({adminModalVisible:false});
+                    this.setState({
+                        page:1,
+                        pageSize:50
+                    })
+                    this.findUserInfo(0,50);
+                }else{
+                    message.error('操作异常',3);
+                }
+              }).catch((error)=>{
+                message.error('操作异常',3);
+              })
+            }
+          });
+    }
+    /**
+     * 域名分配
+     */
+    getDomain=(d)=>{
+        if(d.length>0){
+            var  a =[];
+            for (let i = 0; i < d.length; i++) {
+                a.push(<p>{d[i].domain_name}</p> );
+            }
+            return a
+        }
+    }
+    getFb=(f)=>{
+        if(f.length>0){
+            var  a =[];
+            for (let i = 0; i < f.length; i++) {
+                a.push(<p>{f[i].fb_name}</p> );
+            }
+            return a
+        }
+    }
+    /**
+     * 修改
+     */
+    openEditWindow=(info)=>{
+        this.setState({
+            adminModalTitle:'编辑信息',adminModalVisible:true,isAdd:false
+        })
+        const { setFieldsValue } = this.props.form;
+        var fb_id=[];
+        for (let i = 0; i < info.fbEtities.length; i++) {
+            fb_id.push(info.fbEtities[i].id);
+        }
+        var domain_id =[];
+        for (let i = 0; i < info.domailEntities.length; i++) {
+            domain_id.push(info.domailEntities[i].id);
+        }
+        setFieldsValue({
+            "id":info.id,
+            "username": info.username,
+            "password":info.password,
+            "fb_id":fb_id,
+            "domain_id":domain_id
+        });
     }
     render(){
         const columns=[
@@ -73,9 +191,44 @@ export default class ProductInfoView extends Component{
                 width:'15%'
             },
             {
+                title: '角色',
+                dataIndex: 'role_code',
+                key: 'role_code',
+                width:100,
+                render:(text,record)=>{
+                    if(text === 'role_user'){
+                        return '业务员';
+                    }else{
+                        return '管理员'
+                    }
+                }
+            },
+            {
                 title: '域名 & Facebbokid分配',
-                dataIndex: 'id',
-                key: 'id',
+                dataIndex: 'fbdomain',
+                key: 'fbdomain',
+                render:(text,record)=>{
+                    if(record.domailEntities || record.fbEtities){
+                        return(
+                            <table>
+                            <tr>
+                                <td>域名分配</td>
+                                <td>FB分配</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    {this.getDomain(record.domailEntities)}
+                                </td>
+                                <td>
+                                    {this.getFb(record.fbEtities)}
+                                </td>
+                            </tr>
+                        </table>
+                        )
+                    }else{
+                        return '----'
+                    }
+                }
             },
             {
                 title: '创建时间',
@@ -91,12 +244,25 @@ export default class ProductInfoView extends Component{
                 render:(text,record)=>{
                     return(
                         <span>
-                            <a href="javascript:void(0);" onClick={()=>{}}>编辑</a>
+                            <a href="javascript:void(0);" onClick={()=>{
+                                this.openEditWindow(record);
+                            }}>编辑</a>
                         </span>
                     )
                 }
             } 
         ]
+        const formItemLayout = {
+            labelCol: {
+              xs: { span: 24 },
+              sm: { span: 5 },
+            },
+            wrapperCol: {
+              xs: { span: 24 },
+              sm: { span: 19 },
+            },
+          };
+        const { getFieldDecorator } = this.props.form;
         return(
             <div style={{backgroundColor:"#fff"}}>
                 <div className='example-input'>
@@ -116,7 +282,8 @@ export default class ProductInfoView extends Component{
                         }}>查询</Button>
                             &nbsp; &nbsp;
                         <Button type="primary" icon="plus" onClick={()=>{
-                                
+                                this.props.form.resetFields();
+                                this.setState({adminModalTitle:'添加信息',adminModalVisible:true,isAdd:true})
                         }}>添加</Button>
                         </Col>
                     </Row>
@@ -132,7 +299,78 @@ export default class ProductInfoView extends Component{
                             }}
                             onChange={this.productInfoTableChange} />
                 </div>
+                <Modal
+                maskClosable={false}
+                title={this.state.adminModalTitle}
+                visible={this.state.adminModalVisible}
+                onOk={this.handleSubmit}
+                onCancel={()=>{this.setState({adminModalVisible:false})}}
+                >
+                 <Form onSubmit={this.handleSubmit} className="login-form">
+                    <Form.Item>
+                        {getFieldDecorator('id')(
+                            <Input type="hidden" />
+                        )}
+                    </Form.Item>
+                    <Form.Item
+                        {...formItemLayout}
+                        label="登录名称:"
+                        >
+                        {getFieldDecorator('username', {
+                            rules: [{ required: true, message: '登录名称不能为空..' }],
+                        })(
+                                <Input  />
+                        )}
+                    </Form.Item>
+                    <Form.Item
+                        {...formItemLayout}
+                        label="登录密码:"
+                        >
+                        {getFieldDecorator('password', {
+                            rules: [{ required: true, message: '登录密码不能为空..' }],
+                        })(
+                                <Input  />
+                        )}
+                    </Form.Item>
+                    <Form.Item
+                        {...formItemLayout}
+                        label="FBID:"
+                        >
+                        {getFieldDecorator('fb_id', {
+                            rules: [{ required: true, message: 'FBID不能为空..' }],
+                        })(
+                            <Select
+                            mode="multiple"
+                            style={{ width: '100%' }}
+                            defaultValue={[]}
+                            onChange={()=>{}}
+                          >
+                            {this.state.fbDataAll}
+                          </Select>
+                        )}
+                    </Form.Item>
+                    <Form.Item
+                        {...formItemLayout}
+                        label="域名:"
+                        >
+                        {getFieldDecorator('domain_id', {
+                            rules: [{ required: true, message: '域名不能为空..' }],
+                        })(
+                            <Select
+                            mode="multiple"
+                            style={{ width: '100%' }}
+                            defaultValue={[]}
+                            onChange={()=>{}}
+                          >
+                            {this.state.domainDataAll}
+                          </Select>
+                        )}
+                    </Form.Item>
+                 </Form>
+                </Modal>
             </div>
         )
     }
 }
+
+export default Form.create()(AdminInfoView);

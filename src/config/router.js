@@ -59,7 +59,7 @@ const ROUTERS =[
                 to:'/home/product/gift',
                 auths:['role_admin'],
                 component:GiftInfoView,
-                show:true,
+                show:false,
             },
             {
                 title:'链接管理',
@@ -68,7 +68,7 @@ const ROUTERS =[
                 to:'/home/product/urls',
                 auths:['role_admin'],
                 component:UrlInfoView,
-                show:true,
+                show:false,
             },
             {
                 title:'产品操作',
@@ -86,7 +86,7 @@ const ROUTERS =[
         icon:'appstore',
         key:'sub2',
         auths:['role_admin'],
-        show:true,
+        show:false,
         childrens:[
             {
                 title:'订单信息',
@@ -122,7 +122,7 @@ const ROUTERS =[
         icon:'appstore',
         key:'sub4',
         auths:['role_admin'],
-        show:true,
+        show:false,
         childrens:[
             {
                 title:'物态上传',
@@ -149,7 +149,7 @@ const ROUTERS =[
                 to:'/home/admin',
                 auths:['role_admin'],
                 component:LoadableAdmin,
-                show:true,
+                show:false,
             },
             {
                 title:'FBID管理',
@@ -158,7 +158,7 @@ const ROUTERS =[
                 to:'/home/role',
                 auths:['role_admin'],
                 component:LoadableRole,
-                show:true,
+                show:false,
             },
             {
                 title:'域名管理',
@@ -167,16 +167,16 @@ const ROUTERS =[
                 to:'/home/menu',
                 auths:['role_admin'],
                 component:LoadableMenu,
-                show:true,
+                show:false,
             },
             {
-                title:'修改密码',
+                title:'测试',
                 icon:'file-text',
                 key:'/home/edit',
                 to:'/home/edit',
                 auths:['role_admin'],
                 component:LoadableEdit,
-                show:false,
+                show:true,
             }
         ]
     }

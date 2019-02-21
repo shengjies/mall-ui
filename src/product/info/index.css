@@ -35,3 +35,8 @@
     width: 130px;
     height: 130px;
 }
+.subBtn{
+    position: fixed;
+    bottom: 5px;
+    right: 40px;
+}

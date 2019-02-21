@@ -2,7 +2,7 @@ import React,{Component} from 'react'
 import { Row, Col,Input,Button,Select,Table,Modal,Form,message,Divider,Switch,Popconfirm} from 'antd'
 import NProgress from 'nprogress'
 import './index.css'
-export default class ProductInfoView extends Component{
+export default class DomainInfoView extends Component{
     componentWillMount(){
         NProgress.start();
     }
@@ -15,7 +15,9 @@ export default class ProductInfoView extends Component{
       this.state={
           total:0,
           page:1,
-          pageSize:50
+          pageSize:50,
+          domainData:[],
+          loading:false
       }
     }
     /**
@@ -33,7 +35,7 @@ export default class ProductInfoView extends Component{
     render(){
         const columns=[
             {
-                title: '链接编号',
+                title: '编号',
                 dataIndex: 'id',
                 key: 'id',
                 width:'15%'
@@ -63,9 +65,7 @@ export default class ProductInfoView extends Component{
                 render:(text,record)=>{
                     return(
                         <span>
-                            <a href="javascript:void(0);" onClick={()=>{}}>查看</a>
-                            <Divider type="vertical"/>
-                            <a href="javascript:void(0);" onClick={()=>{}}>复制</a>
+                            <a href="javascript:void(0);" onClick={()=>{}}>编辑</a>
                         </span>
                     )
                 }
@@ -92,7 +92,7 @@ export default class ProductInfoView extends Component{
                 </div>
                 <div className="table-margin-top">
                 <Table size="small"  loading={this.state.loading} rowKey="id" bordered columns={columns}
-                            dataSource={this.state.vmData} scroll={{ x: 700, y: 720 }} row
+                            dataSource={this.state.domainData} scroll={{ x: 700, y: 720 }} row
                             pagination={{
                                 total: this.state.total, defaultCurrent: 1, defaultPageSize: 50,
                                 current: this.state.page, pageSize: this.state.pageSize,

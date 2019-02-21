@@ -2,7 +2,15 @@ import React,{Component} from 'react'
 import { Row, Col,Icon,Input,Button,Select,Table,Modal,Form,message,Divider,Card,Carousel,Upload,Switch} from 'antd'
 import NProgress from 'nprogress'
 import './index.css'
+import HttpUtils from '../../http/HttpUtils';
+import API from '../../api';
+import {Editor} from '@tinymce/tinymce-react'
 const { TextArea } = Input;
+const Option = Select.Option;
+const plugins = ['advlist anchor autolink autosave code codesample colorpicker colorpicker contextmenu directionality emoticons fullscreen hr image imagetools importcss insertdatetime legacyoutput link lists media nonbreaking noneditable pagebreak paste preview print save searchreplace spellchecker tabfocus table template textcolor textpattern visualblocks visualchars wordcount']
+const toolbar = ['bold italic underline strikethrough | alignleft aligncenter alignright | outdent indent | blockquote undo redo removeformat subscript superscript code codesample',
+  ' fontsizeselect forecolor backcolor | hr bullist numlist | link  charmap  table  anchor pagebreak   emoticons  | myimage  |']
+let sizeindex =2;
 class ProductInfoView extends Component{
     componentWillMount(){
         NProgress.start();
@@ -21,7 +29,195 @@ class ProductInfoView extends Component{
                 status: 'done',
                 url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
               }],
+            id:-1,
+            isAdd:true,
+            mainImage:[],//产品主图,
+            main_image_id:-1,//主图编号
+            roundImage:[],//轮播图,
+            /**
+             * 营销策略
+             */
+            cl_id:1,//营销策略ID
+
+            /**
+             * 详情编辑
+             */
+            editor:null,//编辑器
+            addImageVisible:false,
+            detailsImageList:[],
+            /**
+             * 尺码属性
+             */
+            sizeListForm:[],
+            sizeKeys:[]
         }
+    }
+    /**
+     * 产品主图操作
+     */
+    mainImageChange = ({ file,fileList }) => {
+        this.setState({ 
+            mainImage:fileList
+        })
+        if (file.status !== 'uploading') {
+            if(file.response.status === 200){
+                this.setState({ 
+                    main_image_id:file.response.data.id
+                })
+            }
+        }
+    };
+    mainImageRemove =(file)=>{
+        this.setState({ 
+            main_image_id:-1,
+            mainImage:[]
+        })
+    }
+    /**
+     * 轮播图操作
+     */
+    roundImageChange=({ file,fileList }) => {
+        this.setState({ 
+            roundImage:fileList
+        })
+    };
+    getRoundeImage=(d)=>{
+        var  a =[];
+            for (let i = 0; i < d.length; i++) {
+                if(d[i].response){
+                    var item = d[i].response.data;
+                    a.push(<img  src={item.url} width='100%' height='340px'/> );
+                }else{
+                    a.push(<img  src={d[i].url} width='100%' height='340px'/> );
+                }
+            }
+            return a
+    }
+    /**
+     * 提交表单数据
+     */
+    handleSubmit=(e)=>{
+        e.preventDefault();
+        this.props.form.validateFields((err, values) => {
+            if (!err) {
+                const data = new FormData();
+                data.append("id",this.state.id);
+                data.append("main_image_id",this.state.main_image_id);
+                data.append("name",values.name);
+                data.append("introduction",values.introduction);
+                data.append("description",this.state.editor.getContent());
+                data.append("cl_id",this.state.cl_id);
+                data.append("price",values.price);
+                data.append("o_price",values.o_price);
+                data.append("country",values.country);
+                data.append("unit",values.unit);
+                data.append("sold",values.sold);
+                data.append("comment_num",values.comment_num);
+                data.append("max_buy_num",values.max_buy_num);
+                data.append("facebook",JSON.stringify(values.facebook));
+                data.append("comment",values.comment === undefined ?false:values.comment);
+                data.append("templ",values.templ);
+                data.append("lang",values.lang);
+                data.append("purchase_url",values.purchase_url);
+                data.append("remark",values.remark);
+                var round = this.state.roundImage;
+                var roundId =[];
+                for(let i=0;i<round.length;i++){
+                    if(round[i].response){
+                        roundId.push(round[i].response.data.id);
+                    }else{
+                        roundId.push(round[i].id);
+                    }
+                }
+                data.append("roundImage",roundId)
+                HttpUtils.post(API.PRODUCT_ADD,data)
+                .then((result)=>{
+                    if(result.status === 200){
+                        message.success('操作成功',3)
+                    }else{
+                        message.error('操作异常',3)
+                    }
+                }).catch((error)=>{
+                    message.error('操作异常',3)
+                })
+            }
+        })
+    }
+    /**
+     * 编辑详情
+     */
+    detailsHandleChange= ({ file,fileList }) => {
+        this.setState({ 
+            detailsImageList:fileList
+         })
+    };
+    
+    onDetailsSave=(list)=>{
+        var content = this.state.editor.getContent();
+        for(var i=0;i<list.length;i++){
+        var item = list[i].response.data;
+          if(item.url.indexOf('.mp4')>0){
+            var text ='<p align="center" >' +
+              '<video style="object-fit: fill" poster="'+item.min_url+'" class="edui-upload-video  vjs-default-skin  video-js" controls="" preload="auto" width="100%"\n' +
+              '               height="360" src="'+item.url+'">\n' +
+              '            <source src="'+item.url+'" type="video/mp4">\n' +
+              '        </video>' +
+              '</p>'
+            content+=text;
+          }else{
+            var text='<p align="center" ><img src="'+item.url+'"/></p>';
+            content+=text;
+          }
+        }
+        this.state.editor.setContent(content);
+        this.setState({detailsImageList:[]})
+    }
+    /**
+     * 尺码属性操作
+     */
+    addSizeForm=()=>{
+        const { form } = this.props;
+        const keys = form.getFieldValue('sizekeys');
+        const nextKeys = keys.concat(sizeindex++);
+        form.setFieldsValue({
+            sizekeys: nextKeys,
+        });
+    }
+     sizeFormItem = (getFieldDecorator,getFieldValue)=>{
+        getFieldDecorator('sizekeys', { initialValue: [] });
+        const keys = getFieldValue('sizekeys');
+         var a =[];
+         for(let i=0;i<keys.length;i++){
+            a.push(
+                <Form.Item>
+                    {getFieldDecorator(`zlabel[${keys[i]}]`,{
+                        rules: [{ required: true, message: '不能为空..' }],
+                    })(
+                        <Input  style={{width:'35%'}}/>
+                    )}
+                    {getFieldDecorator(`zvalue[${keys[i]}]`,{
+                        rules: [{ required: true, message: '不能为空..' }],
+                        })(
+                            <Input  style={{width:'40%'}}/>
+                    )}
+                    {(
+                        <Icon
+                            style={{ fontSize: '28px' }}
+                            className="dynamic-delete-button"
+                            type="minus-circle-o"
+                            onClick={() => {this.removeSizeFormItem(keys[i])}}
+                        />
+                        )}
+                </Form.Item>
+            )
+         }
+    return a};
+    removeSizeFormItem =(k)=>{
+        const { form } = this.props;
+        const keys = form.getFieldValue('sizekeys');
+        form.setFieldsValue({
+            sizekeys: keys.filter(key => key !== k),
+        });
     }
     render(){
         const uploadMainButton = (
@@ -36,6 +232,12 @@ class ProductInfoView extends Component{
               <div className="ant-upload-text">轮播图片</div>
             </div>
           );
+          const uploadButtonDatail = (
+            <div>
+              <Icon type="plus" />
+              <div className="ant-upload-text">Upload</div>
+            </div>
+          );
           const formItemLayout = {
             labelCol: {
               xs: { span: 24 },
@@ -46,7 +248,10 @@ class ProductInfoView extends Component{
               sm: { span: 19 },
             },
           };
-          const { getFieldDecorator } = this.props.form;
+          const { getFieldDecorator,getFieldValue } = this.props.form;
+          /**
+           * 尺码属性
+           */                                          
         return(
             <div style={{backgroundColor:"#fff"}}>
                 <Row>
@@ -56,41 +261,50 @@ class ProductInfoView extends Component{
                                 title="产品主图">
                                     <div className="mainimg">
                                     <Upload
-                                    action="//jsonplaceholder.typicode.com/posts/"
+                                    action={API.IMAGE_UPLOAD}
                                     listType="picture-card"
-                                    fileList={this.state.fileList}
-                                    onPreview={{}}
-                                    onChange={{}}
+                                    fileList={this.state.mainImage}
+                                    onChange={this.mainImageChange}
+                                    onRemove={this.mainImageRemove}
                                     >
-                                    {this.state.fileList.length >= 1 ? null : uploadMainButton}
+                                    {this.state.mainImage.length >= 1 ? null : uploadMainButton}
                                     </Upload>
                                 </div>
                             </Card>
                         </Col>
                         <Col xs={24} sm={24} md={24} lg={24}>
-                        <Card
+                        <Card style={{ height: 640 }}
                             title="轮播图片">
-                            <Carousel autoplay>
-                                <img  src="https://dsaf465859jzs.cloudfront.net/files/lvRhdkMBQIOYP5u28_fCyw.gif" />
-                                <img  src="https://dsaf465859jzs.cloudfront.net/files/lvRhdkMBQIOYP5u28_fCyw.gif" />
+                            <Carousel autoplay >
+                                {
+                                    this.getRoundeImage(this.state.roundImage)
+                                }
                             </Carousel>
                             <div className="lbdiv">
                             <Upload
-                            action="//jsonplaceholder.typicode.com/posts/"
+                            action={API.IMAGE_UPLOAD}
                             listType="picture-card"
-                            fileList={this.state.fileList}
-                            onPreview={{}}
-                            onChange={{}}
+                            fileList={this.state.roundImage}
+                            onChange={this.roundImageChange}
                             >
-                            {this.state.fileList.length >= 3 ? null : uploadButton}
+                            {this.state.roundImage.length > 3 ? null : uploadButton}
                             </Upload>
                         </div>
                         </Card>
                         </Col>
                         <Col xs={24} sm={24} md={24} lg={24}>
-                            <Card
+                            <Card style={{ height: 242 }}
                                 title="营销策略">
-                                    
+                                    <Select defaultValue={`${this.state.cl_id}`} style={{ width: 120 }} onChange={(e)=>{
+                                        this.setState({cl_id:e})
+                                    }}>
+                                        <Option value="1">无营销策略</Option>
+                                        <Option value="2">自定义</Option>
+                                    </Select>
+                                    &nbsp;&nbsp;&nbsp;
+                                    {
+                                        this.state.cl_id === "2" ?<Button type="primary"> 查看</Button>:null
+                                    }
                             </Card>
                         </Col>
                     </Col>
@@ -99,7 +313,7 @@ class ProductInfoView extends Component{
                         title="产品信息">
                         
                         <div>
-                            <Form onSubmit={this.handleAccountSubmit} className="login-form">
+                            <Form onSubmit={this.handleSubmit} className="login-form">
                                 <Form.Item>
                                     {getFieldDecorator('id')(
                                         <Input type="hidden" />
@@ -109,8 +323,8 @@ class ProductInfoView extends Component{
                                     {...formItemLayout}
                                     label="产品名称:"
                                     >
-                                        {getFieldDecorator('loginName',{
-                                            rules: [{ required: true, message: '登录名称不能为空..' }],
+                                        {getFieldDecorator('name',{
+                                            rules: [{ required: true, message: '产品名称不能为空..' }],
                                         })(
                                             <Input />
                                         )}
@@ -119,38 +333,51 @@ class ProductInfoView extends Component{
                                     {...formItemLayout}
                                     label="国家名称:"
                                     >
-                                        {getFieldDecorator('loginName',{
-                                            rules: [{ required: true, message: '登录名称不能为空..' }],
+                                        {getFieldDecorator('country',{
+                                            rules: [{ required: true, message: '国家名称不能为空..' }],
                                         })(
-                                            <Input />
+                                            <Select  style={{ width: '100%' }} onChange={()=>{}}>
+                                                <Option value="TW">TW-台湾</Option>
+                                                <Option value="MY">MY-马来</Option>
+                                                <Option value="TH">TH-泰国</Option>
+                                            </Select>
                                         )}
                                 </Form.Item>
                                 <Form.Item
                                     {...formItemLayout}
                                     label="页面模板:"
                                     >
-                                        {getFieldDecorator('loginName',{
-                                            rules: [{ required: true, message: '登录名称不能为空..' }],
+                                        {getFieldDecorator('templ',{
+                                            rules: [{ required: true, message: '页面模板不能为空..' }],
                                         })(
-                                            <Input />
+                                            <Select  style={{ width: '100%' }} onChange={()=>{}}>
+                                                <Option value="1">模板一</Option>
+                                                <Option value="2">模板二</Option>
+                                                <Option value="3">模板三</Option>
+                                            </Select>
                                         )}
                                 </Form.Item>
                                 <Form.Item
                                     {...formItemLayout}
-                                    label="语言模板:"
+                                    label="模板语言:"
                                     >
-                                        {getFieldDecorator('loginName',{
-                                            rules: [{ required: true, message: '登录名称不能为空..' }],
+                                        {getFieldDecorator('lang',{
+                                            rules: [{ required: true, message: '模板语言不能为空..' }],
                                         })(
-                                            <Input />
+                                            <Select  style={{ width: '100%' }} onChange={()=>{}}>
+                                                <Option value="zh_TW">中文繁体</Option>
+                                                <Option value="zh_CN">中文简体</Option>
+                                                <Option value="th">泰语</Option>
+                                                <Option value="en">英语</Option>
+                                            </Select>
                                         )}
                                 </Form.Item>
                                 <Form.Item
                                     {...formItemLayout}
                                     label="原价:"
                                     >
-                                        {getFieldDecorator('loginName',{
-                                            rules: [{ required: true, message: '登录名称不能为空..' }],
+                                        {getFieldDecorator('o_price',{
+                                            rules: [{ required: true, message: '原价不能为空..' }],
                                         })(
                                             <Input />
                                         )}
@@ -159,8 +386,8 @@ class ProductInfoView extends Component{
                                     {...formItemLayout}
                                     label="单价:"
                                     >
-                                        {getFieldDecorator('loginName',{
-                                            rules: [{ required: true, message: '登录名称不能为空..' }],
+                                        {getFieldDecorator('price',{
+                                            rules: [{ required: true, message: '单价不能为空..' }],
                                         })(
                                             <Input />
                                         )}
@@ -169,8 +396,8 @@ class ProductInfoView extends Component{
                                     {...formItemLayout}
                                     label="已经售出:"
                                     >
-                                        {getFieldDecorator('loginName',{
-                                            rules: [{ required: true, message: '登录名称不能为空..' }],
+                                        {getFieldDecorator('sold',{
+                                            rules: [{ required: true, message: '已经售出不能为空..' }],
                                         })(
                                             <Input />
                                         )}
@@ -179,8 +406,8 @@ class ProductInfoView extends Component{
                                     {...formItemLayout}
                                     label="评论数量:"
                                     >
-                                        {getFieldDecorator('loginName',{
-                                            rules: [{ required: true, message: '登录名称不能为空..' }],
+                                        {getFieldDecorator('comment_num',{
+                                            rules: [{ required: true, message: '评论数量不能为空..' }],
                                         })(
                                             <Input />
                                         )}
@@ -189,8 +416,8 @@ class ProductInfoView extends Component{
                                     {...formItemLayout}
                                     label="最大购买数量:"
                                     >
-                                        {getFieldDecorator('loginName',{
-                                            rules: [{ required: true, message: '登录名称不能为空..' }],
+                                        {getFieldDecorator('max_buy_num',{
+                                            rules: [{ required: true, message: '最大购买数量不能为空..' }],
                                         })(
                                             <Input />
                                         )}
@@ -199,34 +426,31 @@ class ProductInfoView extends Component{
                                     {...formItemLayout}
                                     label="Facebook像素Id:"
                                     >
-                                        {getFieldDecorator('loginName',{
-                                            rules: [{ required: true, message: '登录名称不能为空..' }],
+                                        {getFieldDecorator('facebook',{
+                                            rules: [{ required: true, message: 'Facebook像素Id不能为空..' }],
                                         })(
-                                            <Input />
-                                        )}
-                                </Form.Item>
-                                <Form.Item
-                                    {...formItemLayout}
-                                    label="状态"
-                                    >
-                                        {getFieldDecorator('loginName')(
-                                            <Switch /> 
+                                            <Select mode="multiple" style={{ width: '100%' }} onChange={()=>{}}>
+                                                <Option value="475864357">475864357</Option>
+                                                <Option value="5435453">5435453</Option>
+                                                <Option value="53454535">53454535</Option>
+                                                <Option value="5345345">5345345</Option>
+                                            </Select>
                                         )}
                                 </Form.Item>
                                 <Form.Item
                                     {...formItemLayout}
                                     label="是否显示评论"
                                     >
-                                        {getFieldDecorator('loginName')(
-                                            <Switch /> 
+                                        {getFieldDecorator('comment')(
+                                            <Switch checkedChildren="是" unCheckedChildren="否"/> 
                                         )}
                                 </Form.Item>
                                 <Form.Item
                                     {...formItemLayout}
                                     label="采购链接:"
                                     >
-                                        {getFieldDecorator('loginName',{
-                                            rules: [{ required: true, message: '登录名称不能为空..' }],
+                                        {getFieldDecorator('purchase_url',{
+                                            rules: [{ required: true, message: '采购链接不能为空..' }],
                                         })(
                                             <TextArea  rows={3} />
                                         )}
@@ -235,8 +459,8 @@ class ProductInfoView extends Component{
                                     {...formItemLayout}
                                     label="产品简介:"
                                     >
-                                        {getFieldDecorator('loginName',{
-                                            rules: [{ required: true, message: '登录名称不能为空..' }],
+                                        {getFieldDecorator('introduction',{
+                                            rules: [{ required: true, message: '产品简介不能为空..' }],
                                         })(
                                             <TextArea  rows={3} />
                                         )}
@@ -245,9 +469,7 @@ class ProductInfoView extends Component{
                                     {...formItemLayout}
                                     label="备注信息:"
                                     >
-                                        {getFieldDecorator('loginName',{
-                                            rules: [{ required: true, message: '登录名称不能为空..' }],
-                                        })(
+                                        {getFieldDecorator('remark')(
                                             <TextArea  rows={3} />
                                         )}
                                 </Form.Item>
@@ -276,21 +498,64 @@ class ProductInfoView extends Component{
                     <Col xs={24} sm={24} md={12} lg={12}>
                         <Card
                                 title="尺码属性">
-                                    <div className="mainimg">
-                                    <Upload
-                                    action="//jsonplaceholder.typicode.com/posts/"
-                                    listType="picture-card"
-                                    fileList={this.state.fileList}
-                                    onPreview={{}}
-                                    onChange={{}}
-                                    >
-                                    {this.state.fileList.length >= 1 ? null : uploadMainButton}
-                                    </Upload>
+                                <div className="mainimg">
+                                <Form onSubmit={this.handleSubmit}>
+                                    {this.sizeFormItem(getFieldDecorator,getFieldValue)}
+                                    <Form.Item>
+                                    <Button type="dashed" onClick={this.addSizeForm} style={{ width: '100%' }}>
+                                        <Icon type="plus" /> 添加尺码属性
+                                    </Button>
+                                    </Form.Item>
+                                </Form>
                                 </div>
                         </Card>
                     </Col>
                 </Row>
-                
+                <Row>
+                   <Col span={24}>
+                   <Card title="产品详情">
+                        <Editor apiKey='tiny'
+                        initialValue={''}
+                        init={{
+                            height: 700,
+                            plugins: plugins,
+                            toolbar: toolbar,
+                            object_resizing : false,
+                            image_dimensions: false,
+                            setup:editor=> {
+                                this.setState({ editor });
+                                let item = this;
+                                editor.ui.registry.addButton('myimage', {
+                                    text:'添加素材',
+                                    onAction: function(){
+                                        item.setState({ addImageVisible:true });
+                                    }
+                                }); 
+                            }
+                            
+                        }} 
+                        onChange={this.handleEditorChange}/>
+                    </Card>
+                   
+                   </Col>
+                </Row>
+                <Button className='subBtn' onClick ={this.handleSubmit} type="primary">{this.state.isAdd?'添加':'编辑'}</Button>
+                <Modal
+                    title="添加素材"
+                    visible={this.state.addImageVisible}
+                    onOk={()=>{this.onDetailsSave(this.state.detailsImageList)}}
+                    onCancel={()=>{this.setState({addImageVisible:false})}}
+                    >
+                        <Upload
+                        action={API.IMAGE_UPLOAD}
+                        listType="picture-card"
+                        multiple={true}
+                        fileList={this.state.detailsImageList}
+                        onChange={this.detailsHandleChange}
+                        >
+                        {uploadButtonDatail}
+                        </Upload>
+                    </Modal>
             </div>
         )
     }

@@ -2,7 +2,7 @@ import React,{Component} from 'react'
 import { Row, Col,Input,Button,Select,Table,Modal,Form,message,Divider,Switch,Popconfirm} from 'antd'
 import NProgress from 'nprogress'
 import './index.css'
-export default class ProductInfoView extends Component{
+export default class FBInfoView extends Component{
     componentWillMount(){
         NProgress.start();
     }
