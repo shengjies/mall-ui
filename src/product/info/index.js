@@ -17,6 +17,21 @@ class ProductInfoView extends Component{
     }
     componentDidMount(){
         NProgress.done();
+        if(!this.state.isAdd){
+            HttpUtils.get(API.PRODUCT_FIND_BY_ID+this.props.location.query.id)
+            .then((result)=>{
+                if(result.status === 200){
+                    const {form} = this.props;
+                    form.setFieldsValue({
+                        name:result.data.name
+                    })
+                }else{
+                    message.error('操作异常',3)  
+                }
+            }).catch((error)=>{
+                message.error('操作异常',3)
+            })
+        }
     }
     constructor(props){
         super(props)
@@ -30,7 +45,7 @@ class ProductInfoView extends Component{
                 url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
               }],
             id:-1,
-            isAdd:true,
+            isAdd:this.props.location.query.add===undefined?true:this.props.location.query.add,
             mainImage:[],//产品主图,
             main_image_id:-1,//主图编号
             roundImage:[],//轮播图,
@@ -100,26 +115,26 @@ class ProductInfoView extends Component{
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-                const data = new FormData();
-                data.append("id",this.state.id);
-                data.append("main_image_id",this.state.main_image_id);
-                data.append("name",values.name);
-                data.append("introduction",values.introduction);
-                data.append("description",this.state.editor.getContent());
-                data.append("cl_id",this.state.cl_id);
-                data.append("price",values.price);
-                data.append("o_price",values.o_price);
-                data.append("country",values.country);
-                data.append("unit",values.unit);
-                data.append("sold",values.sold);
-                data.append("comment_num",values.comment_num);
-                data.append("max_buy_num",values.max_buy_num);
-                data.append("facebook",JSON.stringify(values.facebook));
-                data.append("comment",values.comment === undefined ?false:values.comment);
-                data.append("templ",values.templ);
-                data.append("lang",values.lang);
-                data.append("purchase_url",values.purchase_url);
-                data.append("remark",values.remark);
+                var data ={};
+                data.id=this.state.id;
+                data.main_image_id=this.state.main_image_id;
+                data.name=values.name;
+                data.introduction=values.introduction;
+                data.description=this.state.editor.getContent();
+                data.cl_id=this.state.cl_id;
+                data.price=values.price;
+                data.o_price=values.o_price;
+                data.country=values.country;
+                data.unit=values.unit;
+                data.sold=values.sold;
+                data.comment_num=values.comment_num;
+                data.max_buy_num=values.max_buy_num;
+                data.facebook=JSON.stringify(values.facebook);
+                data.comment=values.comment === undefined ?false:values.comment;
+                data.templ=values.templ;
+                data.lang=values.lang;
+                data.purchase_url=values.purchase_url;
+                data.remark=values.remark;
                 var round = this.state.roundImage;
                 var roundId =[];
                 for(let i=0;i<round.length;i++){
@@ -129,8 +144,20 @@ class ProductInfoView extends Component{
                         roundId.push(round[i].id);
                     }
                 }
-                data.append("roundImage",roundId)
-                HttpUtils.post(API.PRODUCT_ADD,data)
+                data.roundImage=roundId;
+                if(values.sizekeys && values.sizekeys.length >0){
+                    var size =[];
+                    for(let i =0;i<values.sizekeys.length;i++){
+                        var index = values.sizekeys[i];
+                        var item ={
+                            size_label:values.zlabel[index],
+                            size_value:values.zvalue[index]
+                        }
+                        size.push(item);
+                    }
+                    data.sizes=size;
+                }
+                HttpUtils.postJson(API.PRODUCT_ADD,data)
                 .then((result)=>{
                     if(result.status === 200){
                         message.success('操作成功',3)

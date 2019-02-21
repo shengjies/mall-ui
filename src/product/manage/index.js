@@ -4,6 +4,7 @@ import NProgress from 'nprogress'
 import './index.css'
 import HttpUtils from '../../http/HttpUtils';
 import API from '../../api';
+import {Link} from 'react-router-dom'
 export default class ProductInfoView extends Component{
     componentWillMount(){
         NProgress.start();
@@ -114,7 +115,9 @@ export default class ProductInfoView extends Component{
                 render:(text,record)=>{
                     return(
                         <span>
-                            <a href="javascript:void(0);" onClick={()=>{}}>查看</a>
+                            <Link to={{ pathname: '/home/product/info' , query : { add: false,id:record.id }}}>
+                                <a href="javascript:void(0);">查看</a>
+                            </Link>
                             <Divider type="vertical"/>
                             <a href="javascript:void(0);" onClick={()=>{}}>复制</a>
                         </span>
@@ -147,9 +150,7 @@ export default class ProductInfoView extends Component{
                             this.findProductInfo(0,50);
                         }}>查询</Button>
                             &nbsp; &nbsp;
-                        <Button type="primary" icon="plus" onClick={()=>{
-                                
-                        }}>添加</Button>
+                         <Link to={{ pathname: '/home/product/info' , query : { add: true,id:-1 }}}><Button type="primary" icon="plus">添加</Button></Link>
                         </Col>
                     </Row>
                 </div>

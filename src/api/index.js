@@ -23,6 +23,7 @@ var API={
      */
     PRODUCT_ADD:API_ADDRESS+"/product/add",//产品添加
     PRODUCT_FIND:API_ADDRESS+"/product/find",//产品分页查询
+    PRODUCT_FIND_BY_ID:API_ADDRESS+"/product/find/",//按照编号查询产品信息
 }
 
 export default API;
