@@ -40,3 +40,8 @@
     bottom: 5px;
     right: 40px;
 }
+.typeimg .ant-upload.ant-upload-select-picture-card{
+    width: 100px;
+    height: 100px;
+    display: inline-table;
+}

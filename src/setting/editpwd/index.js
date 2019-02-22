@@ -3,7 +3,14 @@ import NProgress from 'nprogress'
 import {
     Form, Input, Icon, Button,Upload,Modal
   } from 'antd';
-import {Editor} from '@tinymce/tinymce-react'
+  import HttpUtils from '../../http/HttpUtils';
+  import API from '../../api';
+  const uploadButton = (
+    <div>
+      <Icon type="plus" />
+      <div className="ant-upload-text">Upload</div>
+    </div>
+  );
 let id = 0;
  class EditPwdView extends Component{
     componentWillMount(){
@@ -16,153 +23,161 @@ let id = 0;
         
     }
     constructor(props){
-        super(props);
-        this.state={
-            keys:[0,1,2],
-            label:["434","3434"],
-            fileList: [{
-                uid: '-1',
-                name: 'xxx.png',
-                status: 'done',
-                url: 'http://127.0.0.1:8090/img/Ts1VZTCNSVa42KwfGuKIJA.jpg',
-              }],
-              editor:null,
-              addImageVisible:false,
-              imageList:[]
-        }
-    }
-    handleChange = ({ file,fileList }) => {
-        this.setState({ 
-            imageList:fileList
-         })
-    };
-    onSave=(list)=>{
-        var content = this.state.editor.getContent();
-        for(var i=0;i<list.length;i++){
-        var item = list[i].response.data;
-          if(item.url.indexOf('.mp4')>0){
-            var text ='<p align="center" >' +
-              '<video style="object-fit: fill" poster="'+item.min_url+'" class="edui-upload-video  vjs-default-skin  video-js" controls="" preload="auto" width="100%"\n' +
-              '               height="360" src="'+item.url+'">\n' +
-              '            <source src="'+item.url+'" type="video/mp4">\n' +
-              '        </video>' +
-              '</p>'
-            content+=text;
-          }else{
-            var text='<p align="center" ><img src="'+item.url+'"/></p>';
-            content+=text;
-          }
-        }
-        this.state.editor.setContent(content);
-        this.setState({imageList:[]})
+      super(props)
+      this.state={
+        fileList:[],
+      }
     }
     remove = (k) => {
-        const { form } = this.props;
-        const keys = form.getFieldValue('keys');
-        if (keys.length === 1) {
-          return;
+      const { form } = this.props;
+      // can use data-binding to get
+      const keys = form.getFieldValue('keys');
+      // We need at least one passenger
+      if (keys.length === 1) {
+        return;
+      }
+  
+      // can use data-binding to set
+      form.setFieldsValue({
+        keys: keys.filter(key => key !== k),
+      });
+    }
+  
+    add = () => {
+      const { form } = this.props;
+      // can use data-binding to get
+      const keys = form.getFieldValue('keys');
+      const nextKeys = keys.concat(id++);
+      // can use data-binding to set
+      // important! notify form to detect changes
+      form.setFieldsValue({
+        keys: nextKeys,
+      });
+    }
+  
+    handleSubmit = (e) => {
+      e.preventDefault();
+      this.props.form.validateFields((err, values) => {
+        if (!err) {
+          console.log('Received values of form: ', values);
         }
-    
-        form.setFieldsValue({
-          keys: keys.filter(key => key !== k),
-        });
+      });
+    }
+    handleChange =({file,fileList,event})=>{
+            const list = this.state.fileList;
+            if(list.indexOf(fileList)<0){
+              list.push(fileList)
+              this.setState({ 
+                fileList: list
+              })
+            }
+            
+            if(fileList[0] && fileList[0].status === "done"){
+              const { form } = this.props;
+              const timg = form.getFieldValue('timg');
+              timg[fileList[0].response.data.product_id] = fileList[0].response.data.uid
+              form.setFieldsValue({
+                'timg':timg
+              });
+            }
+        
+    }
+    getUploadButton=(k)=>{
+      if(this.state.fileList[k]){
+        return this.state.fileList[k].length >= 1?null:uploadButton;
+      }else{
+        return uploadButton;
       }
-    
-      add = () => {
-        const { form } = this.props;
-        const keys = form.getFieldValue('keys');
-        const nextKeys = keys.concat(id++);
-        form.setFieldsValue({
-          keys: this.state.keys,
-        });
-      }
-    
-      handleSubmit = (e) => {
-        e.preventDefault();
-        this.props.form.validateFields((err, values) => {
-          if (!err) {
-            alert(JSON.stringify(values));
-          }
-        });
-      }
-      render() {
-        const { getFieldDecorator, getFieldValue } = this.props.form;
-        const formItemLayout = {
-          labelCol: {
-            xs: { span: 24 },
-            sm: { span: 4 },
-          },
-          wrapperCol: {
-            xs: { span: 24 },
-            sm: { span: 20 },
-          },
-        };
-        const formItemLayoutWithOutLabel = {
-          wrapperCol: {
-            xs: { span: 24, offset: 0 },
-            sm: { span: 20, offset: 4 },
-          },
-        };
-        const uploadButton = (
-            <div>
-              <Icon type="plus" />
-              <div className="ant-upload-text">Upload</div>
-            </div>
-          );
-          const plugins = ['advlist anchor autolink autosave code codesample colorpicker colorpicker contextmenu directionality emoticons fullscreen hr image imagetools importcss insertdatetime legacyoutput link lists media nonbreaking noneditable pagebreak paste preview print save searchreplace spellchecker tabfocus table template textcolor textpattern visualblocks visualchars wordcount']
-
-          const toolbar = ['bold italic underline strikethrough | alignleft aligncenter alignright | outdent indent | blockquote undo redo removeformat subscript superscript code codesample',
-  ' fontsizeselect forecolor backcolor | hr bullist numlist | link  charmap  table  anchor pagebreak   emoticons  | myimage  |']
-
-        getFieldDecorator('keys', { initialValue: [] });
-        const keys = getFieldValue('keys');
-        const formItems = keys.map((k, index) => (
-          <Form.Item
-            {...(index === 0 ? formItemLayout : formItemLayoutWithOutLabel)}
-            label={index === 0 ? 'Passengers' : ''}
-            required={false}
-            key={k}
-          >
-            {getFieldDecorator(`label[${k}]`, {
-              validateTrigger: ['onChange', 'onBlur'],
-              initialValue:this.state.label[k],
-              rules: [{
-                required: true,
-                whitespace: true,
-                message: "请填写内容",
-              }],
-            })(
-              <Input  style={{ width: '30%', marginRight: 8 }} />
-              
-            )}
-            {getFieldDecorator(`value[${k}]`, {
-              validateTrigger: ['onChange', 'onBlur'],
-              rules: [{
-                required: true,
-                whitespace: true,
-                message: "请填写内容",
-              }],
-            })(
-              <Input  style={{ width: '30%', marginRight: 8 }} />
-            )}
-            <Upload
-                action="http://localhost:8080/upload"
-                listType="picture-card"
-                fileList={this.state.fileList}
-                >
-                {this.state.fileList.length >= 3 ? null : uploadButton}
-              </Upload>
-            {keys.length > 1 ? (
-              <Icon
-                className="dynamic-delete-button"
-                type="minus-circle-o"
-                disabled={keys.length === 1}
-                onClick={() => this.remove(k)}
-              />
-            ) : null}
-          </Form.Item>
-        ));
-        return (
+    }
+    onRemoveImage=(file)=>{
+      const list = this.state.fileList;
+      const { form } = this.props;
+      const timg = form.getFieldValue('timg');
+      timg[file.response.data.product_id] = undefined;
+      console.log(list[file.response.data.product_id])
+      list[file.response.data.product_id] = undefined;
+      this.setState({ 
+        fileList: list
+      })
+      form.setFieldsValue({
+        'timg':timg
+      });
+    }
+    render() {
+      const { getFieldDecorator, getFieldValue } = this.props.form;
+      const formItemLayout = {
+        labelCol: {
+          xs: { span: 24 },
+          sm: { span: 4 },
+        },
+        wrapperCol: {
+          xs: { span: 24 },
+          sm: { span: 20 },
+        },
+      };
+      const formItemLayoutWithOutLabel = {
+        wrapperCol: {
+          xs: { span: 24, offset: 0 },
+          sm: { span: 20, offset: 4 },
+        },
+      };
+      getFieldDecorator('keys', { initialValue: [] });
+      const keys = getFieldValue('keys');
+      
+      const formItems = keys.map((k, index) => (
+        <Form.Item
+          {...(index === 0 ? formItemLayout : formItemLayoutWithOutLabel)}
+          label={index === 0 ? 'Passengers' : ''}
+          required={false}
+          key={k}
+        >
+          {getFieldDecorator(`tlabel[${k}]`, {
+            validateTrigger: ['onChange', 'onBlur'],
+            rules: [{
+              required: true,
+              whitespace: true,
+              message: "不能为空",
+            }],
+          })(
+            <Input placeholder="passenger name" style={{ width: '15%', marginRight: 8 }} />
+          )}
+          {getFieldDecorator(`tvalue[${k}]`, {
+            validateTrigger: ['onChange', 'onBlur'],
+            rules: [{
+              required: true,
+              whitespace: true,
+              message: "不能为空",
+            }],
+          })(
+            <Input placeholder="passenger name" style={{ width: '15%', marginRight: 8 }} />
+          )}
+          {getFieldDecorator(`timg[${k}]`, {
+            validateTrigger: ['onChange', 'onBlur']
+          })(
+            <Input   style={{ width: '10%', marginRight: 8 }} />
+          )}
+          <Upload
+              action={API.IMAGE_UPLOAD}
+              listType="picture-card"
+              data={{key:k}}
+              fileList={this.state.fileList[k]}
+              onChange={this.handleChange}
+              onRemove={this.onRemoveImage}
+            >
+            {this.getUploadButton(k)}
+          </Upload>
+          {keys.length > 1 ? (
+            <Icon
+              className="dynamic-delete-button"
+              type="minus-circle-o"
+              disabled={keys.length === 1}
+              onClick={() => this.remove(k)}
+            />
+          ) : null}
+        </Form.Item>
+      ));
+      return (
+        <div>
           <Form onSubmit={this.handleSubmit}>
             {formItems}
             <Form.Item {...formItemLayoutWithOutLabel}>
@@ -174,7 +189,9 @@ let id = 0;
               <Button type="primary" htmlType="submit">Submit</Button>
             </Form.Item>
           </Form>
-        );
-      }
+          
+        </div>
+      );
+    }
 }
 export default Form.create()(EditPwdView);

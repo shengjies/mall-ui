@@ -121,7 +121,7 @@ export default class LayoutView extends Component{
                       <Dropdown overlay={userSetting} placement="bottomLeft">
                         <span className="user">
                           <Avatar src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" />
-                          <span> 邋遢 </span>
+                          <span> admin </span>
                         </span>
                       </Dropdown>
                     </div>

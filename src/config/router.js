@@ -36,6 +36,17 @@ const ProductInfoView = Loadable({
     loading: ()=>(''),
 })
 const ROUTERS =[
+    // {
+    //     title:'首页',
+    //     icon:'appstore',
+    //     key:'sub1',
+    //     auths:['role_admin'],
+    //     key:'/home',
+    //     to:'/home',
+    //     auths:['role_admin'],
+    //     component:LoadableMain,
+    //     show:true,
+    // },
     {
         title:'产品管理',
         icon:'appstore',
@@ -50,7 +61,7 @@ const ROUTERS =[
                 to:'/home/product/manage',
                 auths:['role_admin'],
                 component:ProductManegeoView,
-                show:true,
+                show:false,
             },
             {
                 title:'赠品信息',
@@ -68,7 +79,7 @@ const ROUTERS =[
                 to:'/home/product/urls',
                 auths:['role_admin'],
                 component:UrlInfoView,
-                show:false,
+                show:true,
             },
             {
                 title:'产品操作',
@@ -77,7 +88,7 @@ const ROUTERS =[
                 to:'/home/product/info',
                 auths:['role_admin'],
                 component:ProductInfoView,
-                show:true,
+                show:false,
             },
         ]
     },

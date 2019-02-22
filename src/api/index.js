@@ -15,6 +15,7 @@ var API={
 
     /** 域名管理 */
     DOMAIN_FIND_ALL:API_ADDRESS+"/domain/findAll",//查询所有域名
+    DOMAIN_FIND_LIST_ALL:API_ADDRESS+"/domain/list/all",//查询对应用户分配的域名
 
     /** 图片操作 */
     IMAGE_UPLOAD:API_ADDRESS+"/upload",
@@ -22,8 +23,16 @@ var API={
      * 产品
      */
     PRODUCT_ADD:API_ADDRESS+"/product/add",//产品添加
+    PRODUCT_EDIT:API_ADDRESS+"/product/edit",//产品修改
     PRODUCT_FIND:API_ADDRESS+"/product/find",//产品分页查询
     PRODUCT_FIND_BY_ID:API_ADDRESS+"/product/find/",//按照编号查询产品信息
+    PRODUCT_FIND_LIST_ALL:API_ADDRESS+'/product/list/all',//查询所有产品用于下拉列表
+    /**
+     * 链接管理
+     */
+    URL_ADD:API_ADDRESS+"/urls/add",//添加链接
+    URL_EDIT:API_ADDRESS+"/urls/edit",//修改链接
+    URL_FIND:API_ADDRESS+"/urls/find",//分页查询
 }
 
 export default API;
