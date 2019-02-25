@@ -65,8 +65,13 @@ let id = 0;
     }
     handleChange =({file,fileList,event})=>{
             const list = this.state.fileList;
-            if(list.indexOf(fileList)<0){
-              list.push(fileList)
+            const index = list.indexOf(fileList);
+            if(index <= 0){
+              list.map((item,index) => {
+                if(item !== undefined && item[0].uid === fileList[0].uid){
+                    list[index] = fileList
+                }
+              })
               this.setState({ 
                 fileList: list
               })
@@ -94,7 +99,6 @@ let id = 0;
       const { form } = this.props;
       const timg = form.getFieldValue('timg');
       timg[file.response.data.product_id] = undefined;
-      console.log(list[file.response.data.product_id])
       list[file.response.data.product_id] = undefined;
       this.setState({ 
         fileList: list
@@ -161,6 +165,16 @@ let id = 0;
               listType="picture-card"
               data={{key:k}}
               fileList={this.state.fileList[k]}
+              beforeUpload={(file,fileList)=>{
+                const list = this.state.fileList;
+                if(list[k] === undefined){
+                  list[k] = fileList;
+                  this.setState({ 
+                    fileList: list
+                  })
+                }
+                return true;
+              }}
               onChange={this.handleChange}
               onRemove={this.onRemoveImage}
             >
@@ -189,7 +203,7 @@ let id = 0;
               <Button type="primary" htmlType="submit">Submit</Button>
             </Form.Item>
           </Form>
-          
+          {JSON.stringify(this.state.fileList)}
         </div>
       );
     }

@@ -12,7 +12,7 @@ const LoadableMenu = Loadable({
     loading: ()=>(''),
 })
 const LoadableEdit = Loadable({
-    loader: () => import('../setting/editpwd'),
+    loader: () => import('../setting/test'),
     loading: ()=>(''),
 })
 const LoadableMain = Loadable({
@@ -52,7 +52,7 @@ const ROUTERS =[
         icon:'appstore',
         key:'sub1',
         auths:['role_admin'],
-        show:true,
+        show:false,
         childrens:[
             {
                 title:'产品信息',
