@@ -193,73 +193,72 @@ class ProductInfoView extends Component{
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-                console.log(values);
-                // var data ={};
-                // data.id=this.state.id;
-                // data.main_image_id=this.state.main_image_id;
-                // data.name=values.name;
-                // data.introduction=values.introduction;
-                // data.description=this.state.editor.getContent();
-                // data.cl_id=this.state.cl_id;
-                // data.price=values.price;
-                // data.o_price=values.o_price;
-                // data.country=values.country;
-                // data.unit=values.unit;
-                // data.sold=values.sold;
-                // data.comment_num=values.comment_num;
-                // data.max_buy_num=values.max_buy_num;
-                // data.facebook=JSON.stringify(values.facebook);
-                // data.comment=values.comment === undefined ?false:values.comment;
-                // data.templ=values.templ;
-                // data.lang=values.lang;
-                // data.purchase_url=values.purchase_url;
-                // data.remark=values.remark;
-                // var round = this.state.roundImage;
-                // var roundId =[];
-                // for(let i=0;i<round.length;i++){
-                //     if(round[i].response){
-                //         roundId.push(round[i].response.data.uid);
-                //     }else{
-                //         roundId.push(round[i].uid);
-                //     }
-                // }
-                // data.roundImage=roundId;
-                // if(values.sizekeys && values.sizekeys.length >0){
-                //     var size =[];
-                //     for(let i =0;i<values.sizekeys.length;i++){
-                //         var index = values.sizekeys[i];
-                //         var item ={
-                //             size_label:values.zlabel[index],
-                //             size_value:values.zvalue[index]
-                //         }
-                //         size.push(item);
-                //     }
-                //     data.sizes=size;
-                // }
-                // if(values.typekeys && values.typekeys.length > 0){
-                //     var type =[];
-                //     for(let i= 0;i<values.typekeys.length;i++){
-                //         var index = values.typekeys[i];
-                //         var item ={
-                //             type_lable:values.tlabel[index],
-                //             type_value:values.tvalue[index],
-                //             img_id:values.timg[index],
-                //         }
-                //         type.push(item);
-                //     }
-                //     data.types=type;
-                // }
-                // var url = this.state.isAdd?API.PRODUCT_ADD:API.PRODUCT_EDIT;
-                // HttpUtils.postJson(url,data)
-                // .then((result)=>{
-                //     if(result.status === 200){
-                //         message.success('操作成功',3)
-                //     }else{
-                //         message.error('操作异常',3)
-                //     }
-                // }).catch((error)=>{
-                //     message.error('操作异常',3)
-                // })
+                var data ={};
+                data.id=this.state.id;
+                data.main_image_id=this.state.main_image_id;
+                data.name=values.name;
+                data.introduction=values.introduction;
+                data.description=this.state.editor.getContent();
+                data.cl_id=this.state.cl_id;
+                data.price=values.price;
+                data.o_price=values.o_price;
+                data.country=values.country;
+                data.unit=values.unit;
+                data.sold=values.sold;
+                data.comment_num=values.comment_num;
+                data.max_buy_num=values.max_buy_num;
+                data.facebook=JSON.stringify(values.facebook);
+                data.comment=values.comment === undefined ?false:values.comment;
+                data.templ=values.templ;
+                data.lang=values.lang;
+                data.purchase_url=values.purchase_url;
+                data.remark=values.remark;
+                var round = this.state.roundImage;
+                var roundId =[];
+                for(let i=0;i<round.length;i++){
+                    if(round[i].response){
+                        roundId.push(round[i].response.data.uid);
+                    }else{
+                        roundId.push(round[i].uid);
+                    }
+                }
+                data.roundImage=roundId;
+                if(values.sizekeys && values.sizekeys.length >0){
+                    var size =[];
+                    for(let i =0;i<values.sizekeys.length;i++){
+                        var index = values.sizekeys[i];
+                        var item ={
+                            size_label:values.zlabel[index],
+                            size_value:values.zvalue[index]
+                        }
+                        size.push(item);
+                    }
+                    data.sizes=size;
+                }
+                if(values.typekeys && values.typekeys.length > 0){
+                    var type =[];
+                    for(let i= 0;i<values.typekeys.length;i++){
+                        var index = values.typekeys[i];
+                        var item ={
+                            type_lable:values.tlabel[index],
+                            type_value:values.tvalue[index],
+                            img_id:values.timg[index],
+                        }
+                        type.push(item);
+                    }
+                    data.types=type;
+                }
+                var url = this.state.isAdd?API.PRODUCT_ADD:API.PRODUCT_EDIT;
+                HttpUtils.postJson(url,data)
+                .then((result)=>{
+                    if(result.status === 200){
+                        message.success('操作成功',3)
+                    }else{
+                        message.error('操作异常',3)
+                    }
+                }).catch((error)=>{
+                    message.error('操作异常',3)
+                })
             }
         })
     }

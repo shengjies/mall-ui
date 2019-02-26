@@ -31,6 +31,7 @@ class UrlInfoView extends Component{
           demainData:[],//域名下拉列表
           urlInfoVisible:false,
           urlInfoTitel:'',
+          isAdd:true,
       }
     }
     /**
@@ -71,7 +72,7 @@ class UrlInfoView extends Component{
             if (result.status === 200) {
                 const children = [];
                 for (let i = 0; i < result.data.length; i++) {
-                    children.push(<Option key={result.data[i].id}>{result.data[i].name}</Option>);
+                    children.push(<Option key={result.data[i].id} value={result.data[i].id}>{result.data[i].name}</Option>);
                 }
                 this.setState({
                     productData: children
@@ -92,7 +93,7 @@ class UrlInfoView extends Component{
             if (result.status === 200) {
                 const children = [];
                 for (let i = 0; i < result.data.length; i++) {
-                    children.push(<Option key={result.data[i].id}>{result.data[i].domain_name}</Option>);
+                    children.push(<Option key={result.data[i].domain_name}>{result.data[i].domain_name}</Option>);
                 }
                 this.setState({
                     demainData: children
@@ -124,7 +125,43 @@ class UrlInfoView extends Component{
      * 表单提交
      */
     handleSubmit =(e)=>{
-
+        e.preventDefault();
+        this.props.form.validateFields((err, values) => {
+            if(!err){
+                var url = this.state.isAdd?API.URL_ADD:API.URL_EDIT;
+                HttpUtils.postJson(url,values)
+                .then((result)=>{
+                    if(result.status === 200){
+                        this.setState({urlInfoVisible:false,page:1,pageSize:50});
+                        message.success("操作成功",3)
+                        this.findUrlInfo(0,50);
+                    }else{
+                        message.error("操作异常",3)
+                    }
+                }).catch((error)=>{
+                    message.error("操作异常",3)
+                })
+            }
+        })
+    }
+    getDomain=(formItemLayout,getFieldDecorator)=>{
+        if(this.state.isAdd){
+            return(
+                <Form.Item
+                    {...formItemLayout}
+                        label="域名:"
+                        >
+                        {getFieldDecorator('domaim', {
+                                rules: [{ required: true, message: '域名不能为空..' }],
+                            })(
+                                <Select allowClear={true} style={{ width: '100%' }}>
+                                     {this.state.demainData}
+                                </Select>
+                             )}
+                 </Form.Item>
+            )
+        }
+       
     }
     render(){
         const columns=[
@@ -132,7 +169,7 @@ class UrlInfoView extends Component{
                 title: '链接编号',
                 dataIndex: 'id',
                 key: 'id',
-                width:'15%'
+                width:240
             },
             {
                 title: '标题',
@@ -184,7 +221,21 @@ class UrlInfoView extends Component{
                 render:(text,record)=>{
                     return(
                         <span>
-                            <a href="javascript:void(0);" onClick={()=>{}}>编辑</a>
+                            <a href="javascript:void(0);" onClick={()=>{
+                               
+                                this.setState({
+                                    isAdd:false,
+                                    urlInfoVisible:true,
+                                    urlInfoTitel:'编辑信息'
+                                })
+                                const { setFieldsValue } = this.props.form;
+                                setFieldsValue({
+                                    "id":record.id,
+                                    "title": record.title,
+                                    'product_id':record.product_id,
+                                    "remark":record.remark
+                                });
+                            }}>编辑</a>
                         </span>
                     )
                 }
@@ -234,14 +285,14 @@ class UrlInfoView extends Component{
                             &nbsp; &nbsp;
                         <Button type="primary" icon="plus" onClick={()=>{
                             this.props.form.resetFields();
-                            this.setState({urlInfoTitel:'添加信息',urlInfoVisible:true})
+                            this.setState({urlInfoTitel:'添加信息',urlInfoVisible:true,isAdd:true})
                         }}>添加</Button>
                         </Col>
                     </Row>
                 </div>
                 <div className="table-margin-top">
                 <Table size="small"  loading={this.state.loading} rowKey="id" bordered columns={columns}
-                            dataSource={this.state.urlsData} scroll={{ x: 700, y: 720 }} row
+                            dataSource={this.state.urlsData} scroll={{ x: 800, y: 720 }} row
                             pagination={{
                                 total: this.state.total, defaultCurrent: 1, defaultPageSize: 50,
                                 current: this.state.page, pageSize: this.state.pageSize,
@@ -254,7 +305,7 @@ class UrlInfoView extends Component{
                 title={this.state.urlInfoTitel}
                 visible={this.state.urlInfoVisible}
                 maskClosable={false}
-                onOk={()=>{}}
+                onOk={this.handleSubmit}
                 onCancel={()=>{
                     this.setState({urlInfoVisible:false})
                 }}
@@ -287,18 +338,7 @@ class UrlInfoView extends Component{
                                </Select>
                             )}
                     </Form.Item>
-                    <Form.Item
-                        {...formItemLayout}
-                        label="域名:"
-                        >
-                            {getFieldDecorator('domaim', {
-                                rules: [{ required: true, message: '域名不能为空..' }],
-                            })(
-                                <Select allowClear={true} style={{ width: '100%' }}>
-                                    {this.state.demainData}
-                               </Select>
-                            )}
-                    </Form.Item>
+                    {this.getDomain(formItemLayout,getFieldDecorator)}
                     <Form.Item
                         {...formItemLayout}
                         label="备注:"

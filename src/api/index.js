@@ -33,6 +33,13 @@ var API={
     URL_ADD:API_ADDRESS+"/urls/add",//添加链接
     URL_EDIT:API_ADDRESS+"/urls/edit",//修改链接
     URL_FIND:API_ADDRESS+"/urls/find",//分页查询
+
+    /**
+     * 模板操作
+     */
+    TEM_ADD:API_ADDRESS+"/tem/add",//添加模板
+    TEM_EDIT:API_ADDRESS+"/tem/edit",//修改模板
+    TEM_FIND:API_ADDRESS+"/tem/find",//模板分页查询
 }
 
 export default API;

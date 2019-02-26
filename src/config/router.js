@@ -11,10 +11,10 @@ const LoadableMenu = Loadable({
     loader: () => import('../setting/menu'),
     loading: ()=>(''),
 })
-const LoadableEdit = Loadable({
-    loader: () => import('../setting/test'),
-    loading: ()=>(''),
-})
+// const LoadableEdit = Loadable({
+//     loader: () => import('../setting/test'),
+//     loading: ()=>(''),
+// })
 const LoadableMain = Loadable({
     loader: () => import('../main'),
     loading: ()=>(''),
@@ -35,6 +35,10 @@ const ProductInfoView = Loadable({
     loader: () => import('../product/info'),
     loading: ()=>(''),
 })
+const TemplateView = Loadable({
+    loader: () => import('../product/template'),
+    loading: ()=>(''),
+})
 const ROUTERS =[
     // {
     //     title:'首页',
@@ -52,7 +56,7 @@ const ROUTERS =[
         icon:'appstore',
         key:'sub1',
         auths:['role_admin'],
-        show:false,
+        show:true,
         childrens:[
             {
                 title:'产品信息',
@@ -61,7 +65,7 @@ const ROUTERS =[
                 to:'/home/product/manage',
                 auths:['role_admin'],
                 component:ProductManegeoView,
-                show:false,
+                show:true,
             },
             {
                 title:'赠品信息',
@@ -70,7 +74,7 @@ const ROUTERS =[
                 to:'/home/product/gift',
                 auths:['role_admin'],
                 component:GiftInfoView,
-                show:false,
+                show:true,
             },
             {
                 title:'链接管理',
@@ -79,6 +83,14 @@ const ROUTERS =[
                 to:'/home/product/urls',
                 auths:['role_admin'],
                 component:UrlInfoView,
+                show:true,
+            },{
+                title:'模板管理',
+                icon:'file-text',
+                key:'/home/product/tem',
+                to:'/home/product/tem',
+                auths:['role_admin'],
+                component:TemplateView,
                 show:true,
             },
             {
@@ -97,7 +109,7 @@ const ROUTERS =[
         icon:'appstore',
         key:'sub2',
         auths:['role_admin'],
-        show:false,
+        show:true,
         childrens:[
             {
                 title:'订单信息',
@@ -124,7 +136,7 @@ const ROUTERS =[
                 to:'/home/order/info',
                 auths:['role_admin'],
                 component:ProductManegeoView,
-                show:false,
+                show:true,
             }
         ]
     },
@@ -160,7 +172,7 @@ const ROUTERS =[
                 to:'/home/admin',
                 auths:['role_admin'],
                 component:LoadableAdmin,
-                show:false,
+                show:true,
             },
             {
                 title:'FBID管理',
@@ -169,7 +181,7 @@ const ROUTERS =[
                 to:'/home/role',
                 auths:['role_admin'],
                 component:LoadableRole,
-                show:false,
+                show:true,
             },
             {
                 title:'域名管理',
@@ -178,17 +190,18 @@ const ROUTERS =[
                 to:'/home/menu',
                 auths:['role_admin'],
                 component:LoadableMenu,
-                show:false,
-            },
-            {
-                title:'测试',
-                icon:'file-text',
-                key:'/home/edit',
-                to:'/home/edit',
-                auths:['role_admin'],
-                component:LoadableEdit,
                 show:true,
-            }
+             }
+            //  ,
+            // {
+            //     title:'测试',
+            //     icon:'file-text',
+            //     key:'/home/edit',
+            //     to:'/home/edit',
+            //     auths:['role_admin'],
+            //     component:LoadableEdit,
+            //     show:true,
+            // }
         ]
     }
 ];
