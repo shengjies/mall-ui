@@ -12,10 +12,14 @@ var API={
     FB_ADD:API_ADDRESS+"/fb/add",//添加FB信息
     FB_EDIT:API_ADDRESS+"/fb/edit",//编辑FB信息
     FB_FIND_ALL:API_ADDRESS+"/fb/findAll",//查询所有FB
+    FB_FIND_LIST_ALL:API_ADDRESS+"/list/all",//查询登录用户的所有FB
 
     /** 域名管理 */
     DOMAIN_FIND_ALL:API_ADDRESS+"/domain/findAll",//查询所有域名
     DOMAIN_FIND_LIST_ALL:API_ADDRESS+"/domain/list/all",//查询对应用户分配的域名
+    DOMAIN_ADD:API_ADDRESS+"/domain/add",//添加域名
+    DOMAIN_EDIT:API_ADDRESS+"/domain/edit",//修改域名
+    DOMAIN_FIND:API_ADDRESS+"/domain/find",//域名分页查询
 
     /** 图片操作 */
     IMAGE_UPLOAD:API_ADDRESS+"/upload",

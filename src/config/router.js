@@ -11,10 +11,10 @@ const LoadableMenu = Loadable({
     loader: () => import('../setting/menu'),
     loading: ()=>(''),
 })
-// const LoadableEdit = Loadable({
-//     loader: () => import('../setting/test'),
-//     loading: ()=>(''),
-// })
+const LoadableEdit = Loadable({
+    loader: () => import('../setting/test'),
+    loading: ()=>(''),
+})
 const LoadableMain = Loadable({
     loader: () => import('../main'),
     loading: ()=>(''),
@@ -35,10 +35,10 @@ const ProductInfoView = Loadable({
     loader: () => import('../product/info'),
     loading: ()=>(''),
 })
-const TemplateView = Loadable({
-    loader: () => import('../product/template'),
-    loading: ()=>(''),
-})
+// const TemplateView = Loadable({
+//     loader: () => import('../product/template'),
+//     loading: ()=>(''),
+// })
 const ROUTERS =[
     // {
     //     title:'首页',
@@ -84,15 +84,16 @@ const ROUTERS =[
                 auths:['role_admin'],
                 component:UrlInfoView,
                 show:true,
-            },{
-                title:'模板管理',
-                icon:'file-text',
-                key:'/home/product/tem',
-                to:'/home/product/tem',
-                auths:['role_admin'],
-                component:TemplateView,
-                show:true,
             },
+            // {
+            //     title:'模板管理',
+            //     icon:'file-text',
+            //     key:'/home/product/tem',
+            //     to:'/home/product/tem',
+            //     auths:['role_admin'],
+            //     component:TemplateView,
+            //     show:true,
+            // },
             {
                 title:'产品操作',
                 icon:'form',
@@ -192,16 +193,16 @@ const ROUTERS =[
                 component:LoadableMenu,
                 show:true,
              }
-            //  ,
-            // {
-            //     title:'测试',
-            //     icon:'file-text',
-            //     key:'/home/edit',
-            //     to:'/home/edit',
-            //     auths:['role_admin'],
-            //     component:LoadableEdit,
-            //     show:true,
-            // }
+             ,
+            {
+                title:'测试',
+                icon:'file-text',
+                key:'/home/edit',
+                to:'/home/edit',
+                auths:['role_admin'],
+                component:LoadableEdit,
+                show:true,
+            }
         ]
     }
 ];

@@ -8,10 +8,6 @@ import {HashRouter,Route,Link,Switch} from 'react-router-dom'
 import ROUTERS from '../config/router'
 const {Header,Sider,Content} = Layout;
 const SubMenu = Menu.SubMenu;
-const LoadableMain = Loadable({
-  loader: () => import('../main'),
-  loading: ()=>(''),
-})
 export default class LayoutView extends Component{
     loaderComponent=()=>{
         return Loadable({
