@@ -12,6 +12,8 @@ const toolbar = ['bold italic underline strikethrough | alignleft aligncenter al
   ' fontsizeselect forecolor backcolor | hr bullist numlist | link  charmap  table  anchor pagebreak   emoticons  | myimage  |']
 let sizeindex =0;
 let typeindex =0;
+let clindex = 0;
+let zpindex =0;
 const uploadButtonDatail = (
     <div>
       <Icon type="plus" />
@@ -24,87 +26,125 @@ class ProductInfoView extends Component{
     }
     componentDidMount(){
         NProgress.done();
-        if(!this.state.isAdd){
-            HttpUtils.get(API.PRODUCT_FIND_BY_ID+this.props.location.query.id)
-            .then((result)=>{
-                if(result.status === 200){
-                    const {form} = this.props;
-                    form.setFieldsValue({
-                        id:result.data.id,
-                        name:result.data.name,
-                        country:result.data.country,
-                        templ:result.data.templ,
-                        o_price:result.data.templ,
-                        price:result.data.price,
-                        lang:result.data.lang,
-                        sold:result.data.sold,
-                        comment_num:result.data.comment_num,
-                        max_buy_num:result.data.max_buy_num,
-                        comment:result.data.comment,
-                        purchase_url:result.data.purchase_url,
-                        remark:result.data.remark,
-                        facebook:result.data.facebook.split(","),
-                        introduction:result.data.introduction,
-                    })
-                    var mainImage=[];//主图
-                    if(result.data.mainImage){
-                        mainImage.push(result.data.mainImage);
-                    }
-                    var roundImage =[];//轮播图
-                    if(result.data.roundImageList && result.data.roundImageList.length >0){
-                        roundImage = result.data.roundImageList;
-                    }
-                    this.setState({
-                        id:result.data.id,
-                        description:result.data.description,
-                        main_image_id:result.data.main_image_id,
-                        mainImage:mainImage,
-                        roundImage:roundImage
-                    })
-                    
-                    //尺码
-                    if(result.data.sizes && result.data.sizes.length > 0 ){
-                        var sizekeys =[],zlabel =[],zvalue =[];
-                        var item = result.data.sizes;
-                        for(sizeindex = 0;sizeindex < item.length;sizeindex ++){
-                            sizekeys.push(sizeindex);
-                            zlabel.push(item[sizeindex].size_label);
-                            zvalue.push(item[sizeindex].size_value);
+        if(this.props.location.query && this.props.location.query.add !== undefined){
+            this.setState({isAdd:this.props.location.query.add});
+            if(!this.props.location.query.add){
+                HttpUtils.get(API.PRODUCT_FIND_BY_ID+this.props.location.query.id)
+                .then((result)=>{
+                    if(result.status === 200){
+                        const {form} = this.props;
+                        form.setFieldsValue({
+                            id:result.data.id,
+                            name:result.data.name,
+                            country:result.data.country,
+                            templ:result.data.templ,
+                            o_price:result.data.templ,
+                            price:result.data.price,
+                            lang:result.data.lang,
+                            sold:result.data.sold,
+                            comment_num:result.data.comment_num,
+                            max_buy_num:result.data.max_buy_num,
+                            comment:result.data.comment,
+                            purchase_url:result.data.purchase_url,
+                            remark:result.data.remark,
+                            facebook:result.data.facebook.split(","),
+                            introduction:result.data.introduction,
+                        })
+                        var mainImage=[];//主图
+                        if(result.data.mainImage){
+                            mainImage.push(result.data.mainImage);
+                        }
+                        var roundImage =[];//轮播图
+                        if(result.data.roundImageList && result.data.roundImageList.length >0){
+                            roundImage = result.data.roundImageList;
                         }
                         this.setState({
-                            zlabel:zlabel,
-                            zvalue:zvalue
+                            id:result.data.id,
+                            description:result.data.description,
+                            main_image_id:result.data.main_image_id,
+                            mainImage:mainImage,
+                            roundImage:roundImage,
+                            cl_id:result.data.cl_id,
                         })
-                        form.setFieldsValue({
-                            sizekeys: sizekeys,
-                        });
-                    }
-                    //属性
-                    if(result.data.types && result.data.types.length > 0){
-                        var typekeys =[],tlabel =[],tvalue =[],timg=[];
-                        var item = result.data.types;
-                        for(typeindex = 0;typeindex < item.length;typeindex ++){
-                            typekeys.push(typeindex);
-                            tlabel.push(item[typeindex].type_lable);
-                            tvalue.push(item[typeindex].type_value);
-                            timg.push(item[typeindex].img_id)
+                        
+                        //尺码
+                        if(result.data.sizes && result.data.sizes.length > 0 ){
+                            var sizekeys =[],zlabel =[],zvalue =[];
+                            var item = result.data.sizes;
+                            for(sizeindex = 0;sizeindex < item.length;sizeindex ++){
+                                sizekeys.push(sizeindex);
+                                zlabel.push(item[sizeindex].size_label);
+                                zvalue.push(item[sizeindex].size_value);
+                            }
+                            this.setState({
+                                zlabel:zlabel,
+                                zvalue:zvalue
+                            })
+                            form.setFieldsValue({
+                                sizekeys: sizekeys,
+                            });
                         }
-                        this.setState({
-                            tlabel:tlabel,
-                            tvalue:tvalue,
-                            timg:timg
-                        })
-                        form.setFieldsValue({
-                            typekeys: typekeys,
-                        });
+                        //属性
+                        if(result.data.types && result.data.types.length > 0){
+                            var typekeys =[],tlabel =[],tvalue =[],timg=[];
+                            var item = result.data.types;
+                            const list = this.state.fileList;
+                            for(typeindex = 0;typeindex < item.length;typeindex ++){
+                                typekeys.push(typeindex);
+                                tlabel.push(item[typeindex].type_lable);
+                                tvalue.push(item[typeindex].type_value);
+                                timg.push(item[typeindex].img_id);
+                                
+                                if(item[typeindex].imageEntity){
+                                    var img =[];
+                                    item[typeindex].imageEntity.product_id=typeindex;
+                                    img.push(item[typeindex].imageEntity);
+                                    list[typeindex] = img;
+                                }
+                            }
+                            this.setState({
+                                tlabel:tlabel,
+                                tvalue:tvalue,
+                                timg:timg,
+                                fileList:list
+                            })
+                            form.setFieldsValue({
+                                typekeys: typekeys,
+                            });
+                        }
+                        //策略
+                        if(result.data.cl_id === 2 && result.data.policys && result.data.policys.length >0){
+                            var clkeys = [],tcname=[],tcnum=[],tcmoney=[],tcattr=[],tczp=[]
+                            var item = result.data.policys;
+                            for(clindex =0;clindex < result.data.policys.length;clindex++){
+                                clkeys.push(clindex);
+                                tcname.push(item[clindex].tcname);
+                                tcnum.push(item[clindex].tcnum);
+                                tcmoney.push(item[clindex].tcmoney);
+                                tcattr.push(item[clindex].tcattr);
+                                tczp.push(item[clindex].gir);
+                            }
+                            this.setState({
+                                tcname:tcname,
+                                tcnum:tcnum,
+                                tcmoney:tcmoney,
+                                tcattr:tcattr,
+                                tczp:tczp
+                            })
+                            form.setFieldsValue({
+                                clkeys: clkeys
+                            });
+                        }
+                    }else{
+                        message.error('操作异常',3)  
                     }
-                }else{
-                    message.error('操作异常',3)  
-                }
-            }).catch((error)=>{
-                message.error('操作异常',3)
-            })
+                }).catch((error)=>{
+                    message.error('操作异常',3)
+                })
+            }
         }
+        this.getInitFb();
+        this.initGiftInfo();
     }
     constructor(props){
         super(props)
@@ -113,7 +153,7 @@ class ProductInfoView extends Component{
             previewImage: '',
             fileList: [],
             id:-1,
-            isAdd:this.props.location.query.add===undefined?true:this.props.location.query.add,
+            isAdd:true,
             // isAdd:true,
             mainImage:[],//产品主图,
             main_image_id:-1,//主图编号
@@ -142,8 +182,60 @@ class ProductInfoView extends Component{
              */
             tlabel:[],
             tvalue:[],
-            timg:[]
+            timg:[],
+            initFBData:[],
+            initGift:[],
+            /**
+             * 营销策略
+             */
+            tcname:[],
+            tcnum:[],
+            tcmoney:[],
+            tczp:[],
+            tcattr:[],
+            clVisible:false,
+            zpuqkey:-1,
+            zpname:[],
+            zpnum:[]
         }
+    }
+    /**
+     * 初始化fb
+     */
+    getInitFb=()=>{
+        HttpUtils.get(API.FB_FIND_LIST_ALL)
+        .then((result)=>{
+            if(result.status === 200){
+                var fb =[];
+                for(let i =0;i<result.data.length;i++){
+                    fb.push(<Option value={result.data[i].fb_name}>{result.data[i].fb_name}</Option>)
+                }
+                this.setState({initFBData:fb})
+            }else{
+                message.error("操作异常",3);
+            }
+        }).catch((error)=>{
+            message.error("操作异常",3);
+        })
+    }
+    /**
+     * 初始化赠品
+     */
+    initGiftInfo=()=>{
+        HttpUtils.get(API.GIFT_LIST_ALL)
+        .then((result)=>{
+            if(result.status === 200){
+                var gift =[];
+                for(let i =0;i<result.data.length;i++){
+                    gift.push(<Option key={result.data[i].id} value={result.data[i].id}>{result.data[i].name}</Option>)
+                }
+                this.setState({initGift:gift})
+            }else{
+                message.error("操作异常",3);
+            }
+        }).catch((error)=>{
+            message.error("操作异常",3);
+        })
     }
     /**
      * 产品主图操作
@@ -193,6 +285,7 @@ class ProductInfoView extends Component{
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
+                console.log("values",values)
                 var data ={};
                 data.id=this.state.id;
                 data.main_image_id=this.state.main_image_id;
@@ -248,6 +341,22 @@ class ProductInfoView extends Component{
                     }
                     data.types=type;
                 }
+                if(values.clkeys && values.clkeys.length > 0){
+                    var cl =[];
+                    for(let i =0;i<values.clkeys.length;i++){
+                        var index  = values.clkeys[i];
+                        var item ={
+                            tcname:values.tcname[index],
+                            tcnum:values.tcnum[index],
+                            tcmoney:values.tcmoney[index],
+                            tcattr:values.tcattr[index] === undefined?true:values.tcattr[index],
+                            gir:values.tczp[index]
+                        }
+                        cl.push(item);
+                    }
+                    data.policys = cl;
+                }
+                // policys
                 var url = this.state.isAdd?API.PRODUCT_ADD:API.PRODUCT_EDIT;
                 HttpUtils.postJson(url,data)
                 .then((result)=>{
@@ -374,7 +483,7 @@ class ProductInfoView extends Component{
                     {getFieldDecorator(`timg[${keys[i]}]`, {
                         initialValue:this.state.timg[keys[i]]
                     })(
-                        <Input   style={{ width: '10%', marginRight: 8 }} />
+                        <Input type="hidden"   style={{ width: '10%', marginRight: 8 }} />
                     )}
                     <Upload
                         action={API.IMAGE_UPLOAD}
@@ -382,6 +491,16 @@ class ProductInfoView extends Component{
                         data={{key:keys[i]}}
                         fileList={this.state.fileList[keys[i]]}
                         onChange={this.handleTypeImageChange}
+                        beforeUpload={(file,fileList)=>{
+                            const list = this.state.fileList;
+                            if(list[keys[i]] === undefined){
+                              list[keys[i]] = fileList;
+                              this.setState({ 
+                                fileList: list
+                              })
+                            }
+                            return true;
+                          }}
                         onRemove={this.onRemoveTypeImage}
                         >
                         {this.getUploadButton(keys[i])}
@@ -408,13 +527,17 @@ class ProductInfoView extends Component{
       }
       handleTypeImageChange =({file,fileList,event})=>{
         const list = this.state.fileList;
-        if(list.indexOf(fileList)<0){
-          list.push(fileList)
+        const index = list.indexOf(fileList);
+        if(index <= 0){
+          list.map((item,index) => {
+            if(item !== undefined && item[0].uid === fileList[0].uid){
+                list[index] = fileList
+            }
+          })
           this.setState({ 
             fileList: list
           })
         }
-        
         if(fileList[0] && fileList[0].status === "done"){
           const { form } = this.props;
           const timg = form.getFieldValue('timg');
@@ -428,9 +551,13 @@ class ProductInfoView extends Component{
         const list = this.state.fileList;
         const { form } = this.props;
         const timg = form.getFieldValue('timg');
-        timg[file.response.data.product_id] = undefined;
-        console.log(list[file.response.data.product_id])
-        list[file.response.data.product_id] = undefined;
+        if(file.response){
+            timg[file.response.data.product_id] = undefined;
+            list[file.response.data.product_id] = undefined;
+        }else{
+            timg[file.product_id] = undefined;
+            list[file.product_id] = undefined;
+        }
         this.setState({ 
           fileList: list
         })
@@ -445,6 +572,63 @@ class ProductInfoView extends Component{
             typekeys: keys.filter(key => key !== k),
         });
     }
+    /**
+     * 营销策略
+     */
+    addCL = () => {
+        const { form } = this.props;
+        const keys = form.getFieldValue('clkeys');
+        const nextKeys = keys.concat(clindex++);
+        form.setFieldsValue({
+            clkeys: nextKeys,
+        });
+      }
+    removeCL= (k) => {
+        const { form } = this.props;
+        const keys = form.getFieldValue('clkeys');
+        form.setFieldsValue({
+            clkeys: keys.filter(key => key !== k),
+        });
+      }
+      /**
+       * 策略赠品
+       */
+    handleSubmit1 =(e)=>{
+        e.preventDefault();
+        var values = this.props.form.getFieldsValue();
+        if(values.zpkeys){
+            var item =[];
+            values.zpkeys.map((i,index)=>{
+                var a ={
+                    zpname:values.zpname[i],
+                    zpnum:values.zpnum[i]
+                }
+                item.push(a);
+            })
+            const { form } = this.props;
+            const tczp = form.getFieldValue('tczp');
+            tczp[this.state.zpuqkey] = item
+            form.setFieldsValue({
+                'tczp':tczp
+            });
+        }
+        this.setState({clVisible:false})
+      }
+    addCL2 = () => {
+        const { form } = this.props;
+        const keys = form.getFieldValue('zpkeys');
+        const nextKeys = keys.concat(zpindex++);
+        form.setFieldsValue({
+          zpkeys: nextKeys,
+        });
+      }
+    removeCL1 = (k) => {
+        const { form } = this.props;
+        const zpkeys = form.getFieldValue('zpkeys');
+        form.setFieldsValue({
+          zpkeys: zpkeys.filter(key => key !== k),
+        });
+      }
     render(){
         const uploadMainButton = (
             <div className='mainimg'>
@@ -469,9 +653,139 @@ class ProductInfoView extends Component{
             },
           };
           const { getFieldDecorator,getFieldValue } = this.props.form;
+
           /**
-           * 尺码属性
-           */                                          
+           * 营销策略
+           */        
+          const formItemLayoutWithOutLabel = {
+            wrapperCol: {
+              xs: { span: 24, offset: 0 },
+              sm: { span: 20, offset: 4 },
+            },
+          };       
+        getFieldDecorator('clkeys', { initialValue: [] });
+        const keys = getFieldValue('clkeys');
+        const formItems = keys.map((k, index) => (
+            <Form.Item
+              required={false}
+              key={k}
+            >
+              {getFieldDecorator(`tcname[${k}]`, {
+                  initialValue:this.state.tcname[k],
+                validateTrigger: ['onChange', 'onBlur']
+              })(
+                <Input placeholder="套餐名称" style={{ width: '40%', marginRight: 8 }} />
+              )}
+              {getFieldDecorator(`tcnum[${k}]`, {
+                  initialValue:this.state.tcnum[k],
+                validateTrigger: ['onChange', 'onBlur']
+              })(
+                <Input placeholder="总数量" style={{ width: '12%', marginRight: 8 }} />
+              )}
+              {getFieldDecorator(`tcmoney[${k}]`, {
+                  initialValue:this.state.tcmoney[k],
+                validateTrigger: ['onChange', 'onBlur']
+              })(
+                <Input placeholder="总金额" style={{ width: '12%', marginRight: 8 }} />
+              )}
+              {getFieldDecorator(`tczp[${k}]`, {
+                  initialValue:this.state.tczp[k],
+                validateTrigger: ['onChange', 'onBlur']
+              })(
+                <Input type="hidden" style={{ width: '8%', marginRight: 8 }} />
+              )}
+              {getFieldDecorator(`tcattr[${k}]`,{
+                   validateTrigger: ['onChange', 'onBlur']
+              })(
+                  <Switch  checked={this.state.tcattr[k]} defaultChecked={index === 0?true:false}  checkedChildren="显示属性"
+                   unCheckedChildren="不显示属性" onChange={(e)=>{
+                       const trr = this.state.tcattr;
+                       trr[k] = e;
+                        this.setState({
+                            tcattr:trr
+                        })
+                   }} />
+              )}
+              {
+                  <Button type="primary" size="small" onClick={()=>{
+                    this.setState({
+                      zpname:[],
+                      zpnum:[],
+                      zpuqkey:k
+                    })
+                    getFieldDecorator('zpkeys', { initialValue: [] });
+                    zpindex =0;
+                    const { form } = this.props;
+                    form.setFieldsValue({
+                      zpkeys: [],
+                    });
+                    const tczp = getFieldValue('tczp');
+                    if(tczp.length >0 && tczp[k]){
+                      var zpkeys =[],zpname=[],zpnum=[];
+                      tczp[k].map((i,index)=>{
+                        if(i){
+                          zpkeys.push(zpindex);
+                          zpname.push(i.zpname);
+                          zpnum.push(i.zpnum);
+                          zpindex++;
+                        }
+                      })
+                      this.setState({
+                        zpname:zpname,
+                        zpnum:zpnum,
+                      })
+                      form.setFieldsValue({
+                        zpkeys: zpkeys,
+                        zpname:zpname,
+                        zpnum:zpnum,
+                      });
+                    }
+                    this.setState({clVisible:true})
+                  }}>赠品</Button>
+              }
+              {keys.length > 0 ? (
+                <Icon
+                    style={{ fontSize: '24px' }}
+                  className="dynamic-delete-button"
+                  type="minus-circle-o"
+                  onClick={() => this.removeCL(k)}
+                />
+              ) : null}
+            </Form.Item>
+          )); 
+        /**
+         * 策略赠品
+         */        
+        getFieldDecorator('zpkeys', { initialValue: [] });
+        const zpkeys = getFieldValue('zpkeys');
+        const zpItems = zpkeys.map((k, index) => (
+        <Form.Item
+            required={false}
+            key={k}
+          >
+            {getFieldDecorator(`zpname[${k}]`, {
+              validateTrigger: ['onChange', 'onBlur'],
+              initialValue:`${this.state.zpname[k]}`
+            })(
+              <Select allowClear={true}  placeholder="赠品" style={{ width: '50%', marginRight: 8 }}>
+                {this.state.initGift}
+              </Select>
+            )}
+            {getFieldDecorator(`zpnum[${k}]`, {
+              validateTrigger: ['onChange', 'onBlur'],
+              initialValue:this.state.zpnum[k]
+            })(
+              <Input placeholder="总数量"  style={{ width: '40%', marginRight: 8 }} />
+            )}
+            {zpkeys.length > 0 ? (
+              <Icon
+                className="dynamic-delete-button"
+                type="minus-circle-o"
+                onClick={() => this.removeCL1(k)}
+              />
+            ) : null}
+          </Form.Item>
+        ))          
         return(
             <div style={{backgroundColor:"#fff"}}>
                 <Row>
@@ -513,9 +827,9 @@ class ProductInfoView extends Component{
                         </Card>
                         </Col>
                         <Col xs={24} sm={24} md={24} lg={24}>
-                            <Card style={{ height: 242 }}
+                            <Card style={{ minHeight: 242 }}
                                 title="营销策略">
-                                    <Select defaultValue={`${this.state.cl_id}`} style={{ width: 120 }} onChange={(e)=>{
+                                    <Select  value={`${this.state.cl_id}`} style={{ width: 120 }} onChange={(e)=>{
                                         this.setState({cl_id:e})
                                     }}>
                                         <Option value="1">无营销策略</Option>
@@ -523,8 +837,33 @@ class ProductInfoView extends Component{
                                     </Select>
                                     &nbsp;&nbsp;&nbsp;
                                     {
-                                        this.state.cl_id === "2" ?<Button type="primary"> 查看</Button>:null
+                                        this.state.cl_id === 2 || this.state.cl_id === '2'?
+                                        <Form onSubmit={this.handleSubmit}>
+                                            {formItems}
+                                            <Form.Item {...formItemLayoutWithOutLabel}>
+                                                <Button type="dashed" onClick={this.addCL} style={{ width: '90%' }}>
+                                                    <Icon type="plus" /> 添加策略
+                                                </Button>
+                                            </Form.Item>
+                                        </Form>
+                                        :null
                                     }
+                                    <Modal
+                                    maskClosable={false}
+                                    title="赠品信息"
+                                    visible={this.state.clVisible}
+                                    onOk={this.handleSubmit1}
+                                    onCancel={()=>{this.setState({clVisible:false})}}
+                                    >
+                                    <Form onSubmit={this.handleSubmit1}>
+                                        {zpItems}
+                                        <Form.Item>
+                                        <Button type="dashed" onClick={this.addCL2} style={{ width: '90%' }}>
+                                            <Icon type="plus" /> 添加赠品
+                                        </Button>
+                                        </Form.Item>
+                                    </Form>
+                                    </Modal>
                             </Card>
                         </Col>
                     </Col>
@@ -650,10 +989,7 @@ class ProductInfoView extends Component{
                                             rules: [{ required: true, message: 'Facebook像素Id不能为空..' }],
                                         })(
                                             <Select mode="multiple" style={{ width: '100%' }} onChange={()=>{}}>
-                                                <Option value="475864357">475864357</Option>
-                                                <Option value="5435453">5435453</Option>
-                                                <Option value="53454535">53454535</Option>
-                                                <Option value="5345345">5345345</Option>
+                                                {this.state.initFBData}
                                             </Select>
                                         )}
                                 </Form.Item>

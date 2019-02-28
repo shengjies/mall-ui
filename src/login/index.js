@@ -32,8 +32,8 @@ const FormItem = Form.Item;
                 HttpUtils.post(API.USER_LOGIN,formData)
                 .then((res)=>{
                     if(res.status === 200){
-                        window.sessionStorage.setItem('token',res.data.token);
-                        window.sessionStorage.setItem('role',res.data.role);
+                        window.sessionStorage.setItem('token',res.data.t);
+                        window.sessionStorage.setItem('role',res.data.r);
                         window.sessionStorage.setItem('isLogin','1');
                         // this.props.history.push(res.data.role === 'role_admin'?'/home/fb_user':'home/virtualmachine');
                         this.props.history.push('/home/product/manage');

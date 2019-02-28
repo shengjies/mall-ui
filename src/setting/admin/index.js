@@ -34,8 +34,12 @@ class AdminInfoView extends Component{
     /**
      * 产品表格改变
      */
-    productInfoTableChange=()=>{
-
+    productInfoTableChange=(pagination, filters, sorter)=>{
+        this.setState({
+            page: pagination.current,
+            pageSize: pagination.pageSize
+        })
+        this.findUserInfo(pagination.current - 1, pagination.pageSize);
     }
     /**
      * 表格显示总数

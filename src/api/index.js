@@ -12,7 +12,7 @@ var API={
     FB_ADD:API_ADDRESS+"/fb/add",//添加FB信息
     FB_EDIT:API_ADDRESS+"/fb/edit",//编辑FB信息
     FB_FIND_ALL:API_ADDRESS+"/fb/findAll",//查询所有FB
-    FB_FIND_LIST_ALL:API_ADDRESS+"/list/all",//查询登录用户的所有FB
+    FB_FIND_LIST_ALL:API_ADDRESS+"/fb/list/all",//查询登录用户的所有FB
 
     /** 域名管理 */
     DOMAIN_FIND_ALL:API_ADDRESS+"/domain/findAll",//查询所有域名
@@ -44,6 +44,14 @@ var API={
     TEM_ADD:API_ADDRESS+"/tem/add",//添加模板
     TEM_EDIT:API_ADDRESS+"/tem/edit",//修改模板
     TEM_FIND:API_ADDRESS+"/tem/find",//模板分页查询
+    /**
+     * 赠品操作
+     */
+    GIFT_ADD:API_ADDRESS+"/gift/add",//添加赠品
+    GIFT_EDIT:API_ADDRESS+"/gift/edit",//编辑赠品
+    GIFT_FIND:API_ADDRESS+"/gift/find",//分页查询
+    GIFT_FIND_BY_ID:API_ADDRESS+"/gift/find/",//按编号查询赠品信息
+    GIFT_LIST_ALL:API_ADDRESS+"/gift/list/all",//查询所有赠品信息
 }
 
 export default API;
