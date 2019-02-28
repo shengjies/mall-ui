@@ -1,0 +1,47 @@
+
+.example-input{
+    padding: 10px;
+}
+.example-input input.ant-input{
+    width: 95%;
+}
+.table-margin-top{
+    margin-top: 10px;
+}
+
+.ant-carousel .slick-slide {
+    text-align: center;
+    height: 340px;
+    line-height: 160px;
+    background: #364d79;
+    overflow: hidden;
+  }
+  
+.ant-carousel .slick-slide h3 {
+    color: #fff;
+}
+.lbdiv{
+    margin-top: 20px;
+}
+
+.zpmainimg .ant-upload-list-picture-card .ant-upload-list-item{
+    width: 200px;
+    height: 200px;
+}
+.mainimgdiv{
+    display: block;
+}
+.zpmainimg .ant-upload.ant-upload-select-picture-card{
+    width: 200px;
+    height: 200px;
+}
+.subBtn{
+    position: fixed;
+    bottom: 5px;
+    right: 40px;
+}
+.typeimg .ant-upload.ant-upload-select-picture-card{
+    width: 100px;
+    height: 100px;
+    display: inline-table;
+}

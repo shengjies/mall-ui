@@ -27,12 +27,20 @@ const GiftInfoView = Loadable({
     loader: () => import('../product/gift'),
     loading: ()=>(''),
 })
+const GiftInfoEditView = Loadable({
+    loader: () => import('../product/giftinfo'),
+    loading: ()=>(''),
+})
 const UrlInfoView = Loadable({
     loader: () => import('../product/urls'),
     loading: ()=>(''),
 })
 const ProductInfoView = Loadable({
     loader: () => import('../product/info'),
+    loading: ()=>(''),
+})
+const orderInfoView = Loadable({
+    loader: () => import('../order/info'),
     loading: ()=>(''),
 })
 // const TemplateView = Loadable({
@@ -103,6 +111,15 @@ const ROUTERS =[
                 component:ProductInfoView,
                 show:false,
             },
+            {
+                title:'赠品操作',
+                icon:'form',
+                key:'/home/product/zpinfo',
+                to:'/home/product/zpinfo',
+                auths:['role_admin'],
+                component:GiftInfoEditView,
+                show:false,
+            },
         ]
     },
     {
@@ -118,7 +135,7 @@ const ROUTERS =[
                 key:'/home/order/info',
                 to:'/home/order/info',
                 auths:['role_admin'],
-                component:ProductManegeoView,
+                component:orderInfoView,
                 show:true,
             }
         ]
@@ -201,7 +218,7 @@ const ROUTERS =[
                 to:'/home/edit',
                 auths:['role_admin'],
                 component:LoadableEdit,
-                show:true,
+                show:false,
             }
         ]
     }

@@ -24,8 +24,10 @@ class App extends Component {
       <LocaleProvider locale={zhCN}>
        <HashRouter>
           <Switch>
+            {/* <Redirect exact path='/' to='/home'/>
+            <Route path='/home'  render={props =>  (<LoadLayoutView {...props}/>)}/> */}
             <Route exact path='/' component={LoadableLogin}/>
-            <Redirect exact path='/login' to='/'/>
+            <Redirect exact path='/login' to={window.sessionStorage.getItem('isLogin') === '1'?'/home':'/'}/>
             <Route path='/home'  render={props => window.sessionStorage.getItem('isLogin') === '1' ? (<LoadLayoutView {...props}/>):(<Redirect to='/login'/>)}/>
             <Route component={LoadableNotFindView} />
           </Switch>
