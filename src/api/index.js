@@ -31,6 +31,7 @@ var API={
     PRODUCT_FIND:API_ADDRESS+"/product/find",//产品分页查询
     PRODUCT_FIND_BY_ID:API_ADDRESS+"/product/find/",//按照编号查询产品信息
     PRODUCT_FIND_LIST_ALL:API_ADDRESS+'/product/list/all',//查询所有产品用于下拉列表
+    PRODUCT_COPY:API_ADDRESS+'/product/copy',//复制产品
     /**
      * 链接管理
      */
@@ -52,6 +53,14 @@ var API={
     GIFT_FIND:API_ADDRESS+"/gift/find",//分页查询
     GIFT_FIND_BY_ID:API_ADDRESS+"/gift/find/",//按编号查询赠品信息
     GIFT_LIST_ALL:API_ADDRESS+"/gift/list/all",//查询所有赠品信息
+
+    /**
+     * 评论操作
+     */
+    COMMENT_ADD:API_ADDRESS+"/comment/add",//添加评论
+    COMMENT_EDIT:API_ADDRESS+"/comment/edit",//评论编辑
+    COMMENT_FIND:API_ADDRESS+"/comment/find",//分页查询评论
+    
 }
 
 export default API;

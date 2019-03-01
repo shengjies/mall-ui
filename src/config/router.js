@@ -43,6 +43,10 @@ const orderInfoView = Loadable({
     loader: () => import('../order/info'),
     loading: ()=>(''),
 })
+const CommentInfoView =Loadable({
+    loader: () => import('../product/comment'),
+    loading: ()=>(''),
+})
 // const TemplateView = Loadable({
 //     loader: () => import('../product/template'),
 //     loading: ()=>(''),
@@ -118,6 +122,15 @@ const ROUTERS =[
                 to:'/home/product/zpinfo',
                 auths:['role_admin'],
                 component:GiftInfoEditView,
+                show:false,
+            },
+            {
+                title:'产品评论',
+                icon:'form',
+                key:'/home/product/comment',
+                to:'/home/product/comment',
+                auths:['role_admin'],
+                component:CommentInfoView,
                 show:false,
             },
         ]

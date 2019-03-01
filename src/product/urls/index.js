@@ -1,5 +1,5 @@
 import React,{Component} from 'react'
-import { Row, Col,Input,Button,Select,Table,Modal,Form,message,Divider,Switch,Popconfirm} from 'antd'
+import { Row, Col,Input,Button,Select,Table,Modal,Form,message,Divider,Switch,Popover} from 'antd'
 import NProgress from 'nprogress'
 import './index.css'
 import HttpUtils from '../../http/HttpUtils';
@@ -190,9 +190,12 @@ class UrlInfoView extends Component{
                 width:100,
                 render:(text,record)=>{
                     return(
-                        <Button type="primary" onClick={()=>{
-                            window.open(`${record.preview_url}`);
-                        }}>预览</Button>
+                        <Popover content={record.preview_url} >
+                            <Button type="primary" onClick={()=>{
+                                window.open(`${record.preview_url}`);
+                            }}>预览</Button>
+                        </Popover>
+                        
                     )
                 }
             },
