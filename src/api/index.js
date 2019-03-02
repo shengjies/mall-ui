@@ -45,6 +45,7 @@ var API={
     TEM_ADD:API_ADDRESS+"/tem/add",//添加模板
     TEM_EDIT:API_ADDRESS+"/tem/edit",//修改模板
     TEM_FIND:API_ADDRESS+"/tem/find",//模板分页查询
+    TEM_FIND_LIST_ALL:API_ADDRESS+"/tem/list/all",//查询所有模板
     /**
      * 赠品操作
      */
