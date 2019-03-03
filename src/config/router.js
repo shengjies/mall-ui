@@ -47,10 +47,10 @@ const CommentInfoView =Loadable({
     loader: () => import('../product/comment'),
     loading: ()=>(''),
 })
-// const TemplateView = Loadable({
-//     loader: () => import('../product/template'),
-//     loading: ()=>(''),
-// })
+const TemplateView = Loadable({
+    loader: () => import('../product/template'),
+    loading: ()=>(''),
+})
 const ROUTERS =[
     // {
     //     title:'首页',
@@ -97,15 +97,15 @@ const ROUTERS =[
                 component:UrlInfoView,
                 show:true,
             },
-            // {
-            //     title:'模板管理',
-            //     icon:'file-text',
-            //     key:'/home/product/tem',
-            //     to:'/home/product/tem',
-            //     auths:['role_admin'],
-            //     component:TemplateView,
-            //     show:true,
-            // },
+            {
+                title:'模板管理',
+                icon:'file-text',
+                key:'/home/product/tem',
+                to:'/home/product/tem',
+                auths:['role_admin'],
+                component:TemplateView,
+                show:true,
+            },
             {
                 title:'产品操作',
                 icon:'form',

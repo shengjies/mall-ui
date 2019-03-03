@@ -96,7 +96,7 @@ export default class ProductInfoView extends Component{
                 title: '采购链接',
                 dataIndex: 'cgurl',
                 key: 'cgurl',
-                width:280,
+               
             },
             {
                 title: '单价',
@@ -108,6 +108,7 @@ export default class ProductInfoView extends Component{
                 title: '备注信息',
                 dataIndex: 'remark',
                 key: 'remark',
+                width:180,
             },
             {
                 title: '创建者',
@@ -162,7 +163,7 @@ export default class ProductInfoView extends Component{
                 </div>
                 <div className="table-margin-top">
                 <Table size="small"  loading={this.state.loading} rowKey="id" bordered columns={columns}
-                            dataSource={this.state.giftData} scroll={{ x: 700, y: 720 }} row
+                            dataSource={this.state.giftData} scroll={{ x: 1200, y: 720 }} row
                             pagination={{
                                 total: this.state.total, defaultCurrent: 1, defaultPageSize: 50,
                                 current: this.state.page, pageSize: this.state.pageSize,
