@@ -145,6 +145,7 @@ class ProductInfoView extends Component{
         }
         this.getInitFb();
         this.initGiftInfo();
+        this.initTemInfo();
     }
     constructor(props){
         super(props)
@@ -185,6 +186,7 @@ class ProductInfoView extends Component{
             timg:[],
             initFBData:[],
             initGift:[],
+            initTem:[],//模板
             /**
              * 营销策略
              */
@@ -211,6 +213,25 @@ class ProductInfoView extends Component{
                     fb.push(<Option value={result.data[i].fb_name}>{result.data[i].fb_name}</Option>)
                 }
                 this.setState({initFBData:fb})
+            }else{
+                message.error("操作异常",3);
+            }
+        }).catch((error)=>{
+            message.error("操作异常",3);
+        })
+    }
+    /**
+     * 初始化模板
+     */
+    initTemInfo=()=>{
+        HttpUtils.get(API.TEM_FIND_LIST_ALL)
+        .then((result)=>{
+            if(result.status === 200){
+                var tem =[];
+                for(let i =0;i<result.data.length;i++){
+                    tem.push(<Option value={result.data[i].id}>{result.data[i].t_name}</Option>)
+                }
+                this.setState({initTem:tem})
             }else{
                 message.error("操作异常",3);
             }
@@ -910,9 +931,7 @@ class ProductInfoView extends Component{
                                             rules: [{ required: true, message: '页面模板不能为空..' }],
                                         })(
                                             <Select  style={{ width: '100%' }}>
-                                                <Option value="1">模板一</Option>
-                                                <Option value="2">模板二</Option>
-                                                <Option value="3">模板三</Option>
+                                                {this.state.initTem}
                                             </Select>
                                         )}
                                 </Form.Item>

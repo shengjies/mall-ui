@@ -5,7 +5,9 @@ import './index.css'
 import HttpUtils from '../../http/HttpUtils';
 import API from '../../api';
 import {Link} from 'react-router-dom'
-export default class ProductInfoView extends Component{
+const confirm = Modal.confirm;
+const Option = Select.Option;
+class ProductInfoView extends Component{
     componentWillMount(){
         NProgress.start();
     }
@@ -25,6 +27,9 @@ export default class ProductInfoView extends Component{
           id:0,
           name:'',
           user_id:-1,
+          copyid:-1,
+          copyVisible:false,
+          okLoading:false
       }
     }
     findProductInfo=(page,size)=>{
@@ -51,14 +56,62 @@ export default class ProductInfoView extends Component{
     /**
      * 产品表格改变
      */
-    productInfoTableChange=()=>{
-
+    productInfoTableChange=(pagination, filters, sorter)=>{
+        this.setState({
+            page: pagination.current,
+            pageSize: pagination.pageSize
+        })
+        this.findProductInfo(pagination.current - 1, pagination.pageSize);
     }
     /**
      * 表格显示总数
      */
     showTableTotal=(total)=>{
         return `总共 ${total} 条`;
+    }
+    /**
+     * 复制产品
+     */
+    copyProductInfo =()=>{
+        var iten =this;
+        confirm({
+            title: '提示信息',
+            content: '即将复制改产品信息，确认继续...',
+            onOk() {
+                iten.setState({copyVisible:true})
+            },
+            onCancel() {
+                iten.setState({copyid:-1})
+            },
+          });
+    }
+    /**
+     * 提交表单
+     */
+    handleSubmit=(e)=>{
+        e.preventDefault();
+        this.props.form.validateFields((err, values) => {
+            if(!err){
+                this.setState({okLoading:true});
+                const data = new FormData();
+                data.append("id",this.state.copyid);
+                data.append("country",values.country);
+                HttpUtils.post(API.PRODUCT_COPY,data)
+                .then((result)=>{
+                    if(result.status === 200){
+                        message.success("操作成功",3)
+                        this.setState({copyVisible:false,page:1,pageSize:50})
+                        this.findProductInfo(0,50);
+                    }else{
+                        message.error("操作异常",3)
+                    }
+                    this.setState({okLoading:false})
+                }).catch((error)=>{
+                    message.error("操作异常",3)
+                    this.setState({okLoading:false})
+                })
+            }
+        })
     }
     render(){
         const columns=[
@@ -111,7 +164,7 @@ export default class ProductInfoView extends Component{
                 title: '操作',
                 dataIndex: 'action',
                 key: 'action',
-                width:100,
+                width:140,
                 render:(text,record)=>{
                     return(
                         <span>
@@ -119,12 +172,30 @@ export default class ProductInfoView extends Component{
                                 <a href="javascript:void(0);">查看</a>
                             </Link>
                             <Divider type="vertical"/>
-                            <a href="javascript:void(0);" onClick={()=>{}}>复制</a>
+                            <a href="javascript:void(0);" onClick={()=>{
+                                this.setState({copyid:record.id})
+                                this.copyProductInfo()
+                            }}>复制</a>
+                            <Divider type="vertical"/>
+                            <Link to={{ pathname: '/home/product/comment' , query : { id:record.id }}}>
+                                <a href="javascript:void(0);">评论</a>
+                            </Link>
                         </span>
                     )
                 }
             } 
         ]
+        const formItemLayout = {
+            labelCol: {
+              xs: { span: 24 },
+              sm: { span: 5 },
+            },
+            wrapperCol: {
+              xs: { span: 24 },
+              sm: { span: 19 },
+            },
+          };
+        const { getFieldDecorator } = this.props.form;
         return(
             <div style={{backgroundColor:"#fff"}}>
                 <div className='example-input'>
@@ -165,7 +236,38 @@ export default class ProductInfoView extends Component{
                             }}
                             onChange={this.productInfoTableChange} />
                 </div>
+                <Modal
+                    title="请选择国家"
+                    maskClosable={false}
+                    confirmLoading={this.state.okLoading}
+                    visible={this.state.copyVisible}
+                    onOk={this.handleSubmit}
+                    onCancel={()=>{
+                        this.setState({
+                            copyVisible:false
+                        })
+                    }}
+                    >
+                    <Form onSubmit={this.handleSubmit} className="login-form">
+                        <Form.Item
+                            {...formItemLayout}
+                            label="国家:"
+                            >
+                            {getFieldDecorator('country', {
+                                rules: [{ required: true, message: '国家不能为空..' }],
+                            })(
+                                <Select allowClear={true} style={{ width: '100%' }}>
+                                    <Option value="TW">TW-台湾</Option>
+                                    <Option value="MY">MY-马来</Option>
+                                    <Option value="TH">TH-泰国</Option>
+                                </Select>
+                            )}
+                        </Form.Item>
+                    </Form>
+                </Modal>
             </div>
         )
     }
 }
+
+export default Form.create()(ProductInfoView)
