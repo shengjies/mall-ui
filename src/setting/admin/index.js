@@ -1,5 +1,5 @@
 import React,{Component} from 'react'
-import { Row, Col,Input,Button,Select,Table,Modal,Form,message,Divider,Switch,Popconfirm} from 'antd'
+import { Row, Col,Input,Button,Select,Table,Modal,Form,message,Popover,Checkbox,Popconfirm} from 'antd'
 import NProgress from 'nprogress'
 import './index.css'
 import HttpUtils from '../../http/HttpUtils';
@@ -18,6 +18,7 @@ class AdminInfoView extends Component{
       super(props)
       this.state={
           username:'',
+          role_code:'',
           total:0,
           page:1,
           pageSize:50,
@@ -29,6 +30,10 @@ class AdminInfoView extends Component{
           domainDataAll:[],
           isInit:true,
           isAdd:true,
+          /**组员分配 */
+          groupId:-1,//组长编号
+          groups:[],
+          groupValue:[]
       }
     }
     /**
@@ -54,12 +59,17 @@ class AdminInfoView extends Component{
         this.setState({loading:true})
         const formData = new FormData();
         formData.append("username",this.state.username);
+        formData.append("role_code",this.state.role_code);
         formData.append("page",page);
         formData.append("size",pageSize);
         HttpUtils.post(API.USER_FIND,formData)
         .then((result)=>{
             if(result.status === 200){
-                this.setState({userData:result.data.content,total:result.data.count});
+                this.setState({
+                    userData:result.data.page.content,
+                    total:result.data.page.count,
+                    groups:result.data.m
+                });
                 if(this.state.isInit){
                     this.findAllFbId();
                     this.findAllDomain();
@@ -176,11 +186,52 @@ class AdminInfoView extends Component{
             "id":info.id,
             "username": info.username,
             "password":info.password,
+            "role_code":info.role_code,
             "fb_id":fb_id,
             "domain_id":domain_id
         });
     }
+    /**
+     * 组员分配
+     */
+    initGroup=()=>{
+       var checkItem=[];
+       this.state.groups.map((item,index)=>{
+        checkItem.push(<Checkbox value={`${item.id}`}>{item.username}</Checkbox>)
+         })
+        return checkItem;
+    }
     render(){
+        const groupItem = <div><div>
+            <Checkbox.Group value={this.state.groupValue}  
+            style={{ width: '100%' }} onChange={(e)=>{
+               this.setState({
+                groupValue:e
+               })
+            }}>
+            {
+               this.initGroup()
+            }
+            </Checkbox.Group>
+        </div>
+        <div style={{marginTop:10}}>
+            <Button type="primary" onClick={()=>{
+                const data = new FormData();
+                data.append("id",this.state.groupId);
+                data.append("sales",JSON.stringify(this.state.groupValue));
+                HttpUtils.post(API.USER_GROUP,data)
+                .then((result)=>{
+                    if(result.status === 200){
+                        message.success("操作成功",3);
+                    }else{
+                        message.error("操作异常",3)
+                    }
+                }).catch((error)=>{
+                    message.error("操作异常",3)
+                })
+            }}>保存</Button>
+        </div>
+    </div>;
         const columns=[
             {
                 title: '编号',
@@ -202,6 +253,22 @@ class AdminInfoView extends Component{
                 render:(text,record)=>{
                     if(text === 'role_user'){
                         return '业务员';
+                    }else if(text === 'role_group'){
+                        return(
+                            <Popover overlayStyle={{width:400}}
+                             placement="bottom" title={'组员分配'} content={groupItem} 
+                             onClick={()=>{
+                                 this.setState({
+                                    groupId:record.id,
+                                     groupValue:record.groupId
+                                 })
+                             }}
+                              trigger="click">
+                                <Button>组长</Button>
+                            </Popover>
+                        )
+                    }else if(text === 'role_cg'){
+                        return '采购员';
                     }else{
                         return '管理员'
                     }
@@ -272,6 +339,16 @@ class AdminInfoView extends Component{
                 <div className='example-input'>
                     <Row>
                         <Col xs={24} sm={12} md={6} lg={4}>
+                            <Select placeholder="角色" allowClear={true}  style={{ width: '95%' }} onChange={(e)=>{
+                                    this.setState({role_code:e===undefined?'':e});
+                            }} >
+                                <Option value="role_admin">管理员</Option>
+                                <Option value="role_group">组长</Option>
+                                <Option value="role_user">业务员</Option>
+                                <Option value="role_cg">采购员</Option>
+                            </Select>
+                        </Col>
+                        <Col xs={24} sm={12} md={6} lg={4}>
                             <Input placeholder="登录名称" onChange={(e)=>{
                                     this.setState({username:e.target.value});
                             }} />
@@ -314,6 +391,21 @@ class AdminInfoView extends Component{
                     <Form.Item>
                         {getFieldDecorator('id')(
                             <Input type="hidden" />
+                        )}
+                    </Form.Item>
+                    <Form.Item
+                        {...formItemLayout}
+                        label="角色:"
+                        >
+                        {getFieldDecorator('role_code', {
+                            rules: [{ required: true, message: '角色不能为空..' }],
+                        })(
+                            <Select  style={{ width: '100%' }} >
+                            <Option value="role_admin">管理员</Option>
+                            <Option value="role_group">组长</Option>
+                            <Option value="role_user">业务员</Option>
+                            <Option value="role_cg">采购员</Option>
+                          </Select>
                         )}
                     </Form.Item>
                     <Form.Item

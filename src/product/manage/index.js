@@ -1,10 +1,11 @@
 import React,{Component} from 'react'
-import { Row, Col,Input,Button,Select,Table,Modal,Form,message,Divider,Switch,Popconfirm} from 'antd'
+import { Row, Col,Input,Button,Select,Table,Modal,Form,message,Divider,Popconfirm,Popover} from 'antd'
 import NProgress from 'nprogress'
 import './index.css'
 import HttpUtils from '../../http/HttpUtils';
 import API from '../../api';
 import {Link} from 'react-router-dom'
+import AuthorUtils from '../../utils/AuthorUtils'
 const confirm = Modal.confirm;
 const Option = Select.Option;
 class ProductInfoView extends Component{
@@ -13,6 +14,7 @@ class ProductInfoView extends Component{
     }
     componentDidMount(){
         this.findProductInfo(0,50);
+        this.initUser()
         NProgress.done();
     }
 
@@ -26,10 +28,11 @@ class ProductInfoView extends Component{
           loading:false,
           id:0,
           name:'',
-          user_id:-1,
+          user_id:'',
           copyid:-1,
           copyVisible:false,
-          okLoading:false
+          okLoading:false,
+          userData:[],
       }
     }
     findProductInfo=(page,size)=>{
@@ -113,6 +116,77 @@ class ProductInfoView extends Component{
             }
         })
     }
+     /**
+       * 初始化用户
+       */
+      initUser=()=>{
+        if(!AuthorUtils.isAuthor("role_user")  && !AuthorUtils.isAuthor("role_cg")){
+          HttpUtils.get(API.USER_LIST_ALL)
+          .then((result)=>{
+              if(result.status === 200){
+                  var users =[];
+                  for(let i=0;i<result.data.length;i++){
+                      users.push(<Option value={result.data[i].id}>{result.data[i].username}</Option>)
+                  }
+                  this.setState({userData:users});
+              }else{
+                  message.error("操作异常",3);
+              }
+          }).catch((error)=>{
+              message.error("操作异常",3)
+          })
+        }
+    }
+    initUserSelect=()=>{
+        if(!AuthorUtils.isAuthor("role_user")  && !AuthorUtils.isAuthor("role_cg")){
+           return(
+               <Col xs={24} sm={12} md={6} lg={4}>
+                   <Select placeholder="业务员" style={{ width: '95%' }}
+                   allowClear={true}
+                   onChange={(e)=>{
+                       this.setState({user_id:e === undefined?'':e})
+                   }}>
+                       {this.state.userData}
+                   </Select>
+               </Col>
+           )
+         }
+     }
+     /**
+      * 删除操作
+      */
+    hx=()=>{
+        if(AuthorUtils.isAuthor("role_admin")){
+           return(
+            <Divider type="vertical"/>
+           )
+        }
+     }
+    del(record){
+        if(AuthorUtils.isAuthor("role_admin")){
+            return(
+            <Popconfirm title="确认删除，数据无法恢复?" onConfirm={()=>{
+                HttpUtils.get(API.PRODUCT_DEL+record.id)
+                .then((result)=>{
+                    if(result.status === 200){
+                        message.success("操作成功",3);
+                        this.setState({
+                            page:1,
+                            pageSize:50
+                        })
+                        this.findProductInfo(0,50);
+                    }else{
+                        message.error("操作异常",3)
+                    }
+                }).catch((error)=>{
+                    message.error("操作异常",3)
+                })
+            }} onCancel={()=>{message.info("操作取消",3)}} okText="确认" cancelText="取消">
+                <a href="javascript:void(0);" >删除</a>
+            </Popconfirm>
+            )
+        }
+    }
     render(){
         const columns=[
             {
@@ -140,12 +214,21 @@ class ProductInfoView extends Component{
                 title: '产品名称',
                 dataIndex: 'name',
                 key: 'name',
-                width:'15%'
             },
             {
                 title: '采购链接',
                 dataIndex: 'purchase_url',
                 key: 'purchase_url',
+                width:150,
+                render:(text,record)=>{
+                    return(
+                        <Popover content={text}>
+                            <Button type="primary" onClick={()=>{
+                                window.open(`${text}`);
+                            }}>预览</Button>
+                        </Popover>
+                    )
+                }
             },
             {
                 title: '创建者',
@@ -164,7 +247,7 @@ class ProductInfoView extends Component{
                 title: '操作',
                 dataIndex: 'action',
                 key: 'action',
-                width:140,
+                width:100,
                 render:(text,record)=>{
                     return(
                         <span>
@@ -176,10 +259,12 @@ class ProductInfoView extends Component{
                                 this.setState({copyid:record.id})
                                 this.copyProductInfo()
                             }}>复制</a>
-                            <Divider type="vertical"/>
+                            <br/>
                             <Link to={{ pathname: '/home/product/comment' , query : { id:record.id }}}>
                                 <a href="javascript:void(0);">评论</a>
                             </Link>
+                            {this.hx()}
+                            {this.del(record)}
                         </span>
                     )
                 }
@@ -210,11 +295,7 @@ class ProductInfoView extends Component{
                                 this.setState({name:e === undefined?'':e.target.value})
                             }} />
                         </Col>
-                        {/* <Col xs={24} sm={12} md={6} lg={4}>
-                            <Input placeholder="创建者" onChange={(e)=>{
-                                    
-                            }} />
-                        </Col> */}
+                        {this.initUserSelect()}
                         <Col xs={24} sm={12} md={8} lg={6}>
                         <Button type="primary" icon="search" onClick={()=>{
                             this.setState({page:1,pageSize:50});

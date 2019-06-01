@@ -33,6 +33,13 @@ class ProductInfoView extends Component{
                 .then((result)=>{
                     if(result.status === 200){
                         const {form} = this.props;
+                        var ps =[];
+                        if(result.data.ps711){
+                            ps.push("711");
+                        }
+                        if(result.data.psqj){
+                            ps.push("qj");
+                        }
                         form.setFieldsValue({
                             id:result.data.id,
                             name:result.data.name,
@@ -47,9 +54,12 @@ class ProductInfoView extends Component{
                             comment:result.data.comment,
                             purchase_url:result.data.purchase_url,
                             remark:result.data.remark,
+                            cg_price:result.data.cg_price,
                             facebook:result.data.facebook.split(","),
                             introduction:result.data.introduction,
+                            ps:ps
                         })
+                        
                         var mainImage=[];//主图
                         if(result.data.mainImage){
                             mainImage.push(result.data.mainImage);
@@ -66,7 +76,9 @@ class ProductInfoView extends Component{
                             roundImage:roundImage,
                             cl_id:result.data.cl_id,
                         })
-                        
+                        if(this.state.editor){
+                            this.state.editor.setContent(result.data.description);
+                        }
                         //尺码
                         if(result.data.sizes && result.data.sizes.length > 0 ){
                             var sizekeys =[],zlabel =[],zvalue =[];
@@ -198,7 +210,11 @@ class ProductInfoView extends Component{
             clVisible:false,
             zpuqkey:-1,
             zpname:[],
-            zpnum:[]
+            zpnum:[],
+            token:{
+                token:window.sessionStorage.getItem('token')
+            },
+            actionsLoading:false
         }
     }
     /**
@@ -306,8 +322,18 @@ class ProductInfoView extends Component{
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-                console.log("values",values)
+                this.setState({actionsLoading:true})
                 var data ={};
+                if(values.ps && values.ps.indexOf("711") > -1){
+                    data.ps711 = true;
+                }else {
+                    data.ps711= false;
+                }
+                if(values.ps && values.ps.indexOf("qj") > -1){
+                    data.psqj = true;
+                }else {
+                    data.psqj= false;
+                }
                 data.id=this.state.id;
                 data.main_image_id=this.state.main_image_id;
                 data.name=values.name;
@@ -327,6 +353,7 @@ class ProductInfoView extends Component{
                 data.lang=values.lang;
                 data.purchase_url=values.purchase_url;
                 data.remark=values.remark;
+                data.cg_price = values.cg_price;
                 var round = this.state.roundImage;
                 var roundId =[];
                 for(let i=0;i<round.length;i++){
@@ -386,8 +413,10 @@ class ProductInfoView extends Component{
                     }else{
                         message.error('操作异常',3)
                     }
+                    this.setState({actionsLoading:false})
                 }).catch((error)=>{
                     message.error('操作异常',3)
+                    this.setState({actionsLoading:false})
                 })
             }
         })
@@ -509,7 +538,7 @@ class ProductInfoView extends Component{
                     <Upload
                         action={API.IMAGE_UPLOAD}
                         listType="picture-card"
-                        data={{key:keys[i]}}
+                        data={{key:keys[i], token:window.sessionStorage.getItem('token')}}
                         fileList={this.state.fileList[keys[i]]}
                         onChange={this.handleTypeImageChange}
                         beforeUpload={(file,fileList)=>{
@@ -816,6 +845,7 @@ class ProductInfoView extends Component{
                                 title="产品主图">
                                     <div className="mainimg">
                                     <Upload
+                                     data={this.state.token}
                                     action={API.IMAGE_UPLOAD}
                                     listType="picture-card"
                                     fileList={this.state.mainImage}
@@ -837,6 +867,7 @@ class ProductInfoView extends Component{
                             </Carousel>
                             <div className="lbdiv">
                             <Upload
+                             data={this.state.token}
                             action={API.IMAGE_UPLOAD}
                             listType="picture-card"
                             fileList={this.state.roundImage}
@@ -898,6 +929,19 @@ class ProductInfoView extends Component{
                                     {getFieldDecorator('id')(
                                         <Input type="hidden" />
                                     )}
+                                </Form.Item>
+                                <Form.Item
+                                    {...formItemLayout}
+                                    label="付款方式:"
+                                    >
+                                        {getFieldDecorator('ps',{
+                                            
+                                        })(
+                                            <Select mode="multiple"  allowClear={true} style={{ width: '100%' }}>
+                                                <Option key="711" value="711">711超商取货</Option>
+                                                <Option key="qj" value="qj">全家取货</Option>
+                                            </Select>
+                                        )}
                                 </Form.Item>
                                 <Form.Item
                                     {...formItemLayout}
@@ -1022,6 +1066,16 @@ class ProductInfoView extends Component{
                                 </Form.Item>
                                 <Form.Item
                                     {...formItemLayout}
+                                    label="采购单价:"
+                                    >
+                                        {getFieldDecorator('cg_price',{
+                                            rules: [{ required: true, message: '采购单价不能为空..' }],
+                                        })(
+                                            <Input />
+                                        )}
+                                </Form.Item>
+                                <Form.Item
+                                    {...formItemLayout}
                                     label="采购链接:"
                                     >
                                         {getFieldDecorator('purchase_url',{
@@ -1113,7 +1167,7 @@ class ProductInfoView extends Component{
                    
                    </Col>
                 </Row>
-                <Button className='subBtn' onClick ={this.handleSubmit} type="primary">{this.state.isAdd?'添加':'编辑'}</Button>
+                <Button className='subBtn' loading={this.state.actionsLoading} onClick ={this.handleSubmit} type="primary">{this.state.isAdd?'添加':'编辑'}</Button>
                 <Modal
                     title="添加素材"
                     visible={this.state.addImageVisible}
@@ -1121,6 +1175,7 @@ class ProductInfoView extends Component{
                     onCancel={()=>{this.setState({addImageVisible:false})}}
                     >
                         <Upload
+                         data={this.state.token}
                         action={API.IMAGE_UPLOAD}
                         listType="picture-card"
                         multiple={true}

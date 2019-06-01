@@ -30,7 +30,10 @@ class CommentInfoView extends Component{
             fileList: [],
             img_id:-1,
             product_id:-1,
-            isAdd:true
+            isAdd:true,
+            token:{
+                token:window.sessionStorage.getItem('token')
+            }
         }
     }
     /**
@@ -299,6 +302,7 @@ class CommentInfoView extends Component{
                             >
                             {getFieldDecorator('img_id')(
                                     <Upload
+                                    data={this.state.token}
                                     action={API.IMAGE_UPLOAD}
                                     listType="picture-card"
                                     fileList={this.state.fileList}

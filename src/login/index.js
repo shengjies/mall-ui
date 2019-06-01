@@ -34,8 +34,8 @@ const FormItem = Form.Item;
                     if(res.status === 200){
                         window.sessionStorage.setItem('token',res.data.t);
                         window.sessionStorage.setItem('role',res.data.r);
+                        window.sessionStorage.setItem('n',res.data.n);
                         window.sessionStorage.setItem('isLogin','1');
-                        // this.props.history.push(res.data.role === 'role_admin'?'/home/fb_user':'home/virtualmachine');
                         this.props.history.push('/home/product/manage');
                     }else if(res.status === 401){
                         message.warn("用户名或者密码错误",3);
@@ -49,7 +49,7 @@ const FormItem = Form.Item;
     render(){
         const { getFieldDecorator } = this.props.form;
         return(
-            <div style={{width:'100%',height:'100%',backgroundRepeat:'no-repeat fixed',backgroundSize:'100% 100%',backgroundImage: "url(" + require("./img/login2.jpg") + ")"}}>
+            <div style={{width:'100%',height:'100%',backgroundRepeat:'no-repeat fixed',backgroundSize:'100% 100%',backgroundImage: "url(" + require("./img/login.jpg") + ")"}}>
                 <div style={{width:'100%',height:'100%',background: "rgba(0,0,0,.6)"}}>
                     <div className='box'>
                         <div className='login'>

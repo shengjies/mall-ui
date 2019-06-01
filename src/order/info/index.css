@@ -7,3 +7,13 @@
 .table-margin-top{
     margin-top: 10px;
 }
+.attr_modal{
+    top: 0px;
+}
+.attr_form div{
+    width: 100%;
+}
+
+.wl{
+    top: 0px !important;
+}

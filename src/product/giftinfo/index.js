@@ -115,7 +115,10 @@ class GiftInfoEditView extends Component{
              */
             tlabel:[],
             tvalue:[],
-            timg:[]
+            timg:[],
+            token:{
+                token:window.sessionStorage.getItem('token')
+            }
         }
     }
     mainImageChange=({ file,fileList })=>{
@@ -320,6 +323,7 @@ class GiftInfoEditView extends Component{
                 <Input type="hidden"  style={{ width: '10%', marginRight: 8 }} />
             )}
             <Upload
+                data={this.state.token}
                 action={API.IMAGE_UPLOAD}
                 listType="picture-card"
                 data={{key:k}}
@@ -389,6 +393,7 @@ class GiftInfoEditView extends Component{
                                 title="赠品主图">
                                     <div className="zpmainimg">
                                     <Upload
+                                    data={this.state.token}
                                     action={API.IMAGE_UPLOAD}
                                     listType="picture-card"
                                     fileList={this.state.mainImage}

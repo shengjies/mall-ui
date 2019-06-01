@@ -1,5 +1,5 @@
 import React,{Component} from 'react'
-import { Row, Col,Input,Button,Select,Table,Modal,Form,message,Divider,Switch,Popconfirm} from 'antd'
+import { Row, Col,Input,Button,Select,Table,Modal,Form,message,Divider,Switch,Popover} from 'antd'
 import NProgress from 'nprogress'
 import './index.css'
 import HttpUtils from '../../http/HttpUtils';
@@ -90,13 +90,21 @@ export default class ProductInfoView extends Component{
                 title: '赠品名称',
                 dataIndex: 'name',
                 key: 'name',
-                width:'15%'
             },
             {
                 title: '采购链接',
                 dataIndex: 'cgurl',
                 key: 'cgurl',
-               
+                width:150,
+                render:(text,record)=>{
+                    return(
+                        <Popover content={text}>
+                            <Button type="primary" onClick={()=>{
+                                window.open(`${text}`);
+                            }}>预览</Button>
+                        </Popover>
+                    )
+                }
             },
             {
                 title: '单价',
@@ -163,7 +171,7 @@ export default class ProductInfoView extends Component{
                 </div>
                 <div className="table-margin-top">
                 <Table size="small"  loading={this.state.loading} rowKey="id" bordered columns={columns}
-                            dataSource={this.state.giftData} scroll={{ x: 1200, y: 720 }} row
+                            dataSource={this.state.giftData} scroll={{ x: 1000, y: 720 }} row
                             pagination={{
                                 total: this.state.total, defaultCurrent: 1, defaultPageSize: 50,
                                 current: this.state.page, pageSize: this.state.pageSize,

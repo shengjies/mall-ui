@@ -51,6 +51,14 @@ const TemplateView = Loadable({
     loader: () => import('../product/template'),
     loading: ()=>(''),
 })
+const TinymceView = Loadable({
+    loader: () => import('../tinymce'),
+    loading: ()=>(''),
+})
+const WlInfoView =   Loadable({
+    loader: () => import('../wl'),
+    loading: ()=>(''),
+})
 const ROUTERS =[
     // {
     //     title:'首页',
@@ -67,7 +75,7 @@ const ROUTERS =[
         title:'产品管理',
         icon:'appstore',
         key:'sub1',
-        auths:['role_admin'],
+        auths:['role_admin','role_user','role_group',`role_cg`],
         show:true,
         childrens:[
             {
@@ -75,7 +83,7 @@ const ROUTERS =[
                 icon:'exception',
                 key:'/home/product/manage',
                 to:'/home/product/manage',
-                auths:['role_admin'],
+                auths:['role_admin','role_user','role_group',`role_cg`],
                 component:ProductManegeoView,
                 show:true,
             },
@@ -84,7 +92,7 @@ const ROUTERS =[
                 icon:'exception',
                 key:'/home/product/gift',
                 to:'/home/product/gift',
-                auths:['role_admin'],
+                auths:['role_admin','role_user','role_group',`role_cg`],
                 component:GiftInfoView,
                 show:true,
             },
@@ -93,7 +101,7 @@ const ROUTERS =[
                 icon:'paper-clip',
                 key:'/home/product/urls',
                 to:'/home/product/urls',
-                auths:['role_admin'],
+                auths:['role_admin','role_user','role_group'],
                 component:UrlInfoView,
                 show:true,
             },
@@ -111,7 +119,7 @@ const ROUTERS =[
                 icon:'form',
                 key:'/home/product/info',
                 to:'/home/product/info',
-                auths:['role_admin'],
+                auths:['role_admin','role_user','role_group'],
                 component:ProductInfoView,
                 show:false,
             },
@@ -120,7 +128,7 @@ const ROUTERS =[
                 icon:'form',
                 key:'/home/product/zpinfo',
                 to:'/home/product/zpinfo',
-                auths:['role_admin'],
+                auths:['role_admin','role_user','role_group'],
                 component:GiftInfoEditView,
                 show:false,
             },
@@ -129,7 +137,7 @@ const ROUTERS =[
                 icon:'form',
                 key:'/home/product/comment',
                 to:'/home/product/comment',
-                auths:['role_admin'],
+                auths:['role_admin','role_user','role_group'],
                 component:CommentInfoView,
                 show:false,
             },
@@ -139,7 +147,7 @@ const ROUTERS =[
         title:'订单中心',
         icon:'appstore',
         key:'sub2',
-        auths:['role_admin'],
+        auths:['role_admin','role_user','role_group',`role_cg`],
         show:true,
         childrens:[
             {
@@ -147,7 +155,7 @@ const ROUTERS =[
                 icon:'file-search',
                 key:'/home/order/info',
                 to:'/home/order/info',
-                auths:['role_admin'],
+                auths:['role_admin','role_user','role_group',`role_cg`],
                 component:orderInfoView,
                 show:true,
             }
@@ -157,7 +165,7 @@ const ROUTERS =[
         title:'报表管理',
         icon:'appstore',
         key:'sub3',
-        auths:['role_admin'],
+        auths:['role_admin','role_user','role_group'],
         show:false,
         childrens:[
             {
@@ -165,7 +173,7 @@ const ROUTERS =[
                 icon:'file-search',
                 key:'/home/order/info',
                 to:'/home/order/info',
-                auths:['role_admin'],
+                auths:['role_admin','role_user','role_group'],
                 component:ProductManegeoView,
                 show:true,
             }
@@ -176,7 +184,7 @@ const ROUTERS =[
         icon:'appstore',
         key:'sub4',
         auths:['role_admin'],
-        show:false,
+        show:true,
         childrens:[
             {
                 title:'物态上传',
@@ -184,8 +192,17 @@ const ROUTERS =[
                 key:'/home/wt/info',
                 to:'/home/wt/info',
                 auths:['role_admin'],
-                component:ProductManegeoView,
+                component:WlInfoView,
                 show:true,
+            },
+            {
+                title:'编辑详情',
+                icon:'tool',
+                key:'/home/edit/tinymce',
+                to:'/home/edit/tinymce',
+                auths:['role_admin'],
+                component:TinymceView,
+                show:false,
             }
         ]
     },
